@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Funciones Útiles de NumPy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '💡'; /* Icono para Funciones Útiles */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .numpy-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (NumPy)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* np.where, np.unique, etc. */
+        .code-block .py-module { color: #4EC9B0; } /* numpy (np), np.random */
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">6</span>
+            </div>
+            <h1>Tutorial: Funciones Útiles de NumPy</h1>
+            <p>Aplica utilidades de NumPy para analizar y preparar tus datos</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Lógica Condicional: np.where() -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">❔</span>
+                <h2 class="card-title">Lógica Condicional: <span class="numpy-concept"><code>np.where()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>La función <code>np.where(condicion, valor_si_true, valor_si_false)</code> es extremadamente útil. Es como una versión vectorizada de una sentencia <code>if-else</code> que opera sobre arrays.</p>
+                <p>Devuelve un nuevo array donde los elementos se eligen de <code>valor_si_true</code> o <code>valor_si_false</code> según el valor de <code>condicion</code> (que debe ser un array booleano).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">arr</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">15</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array original:"</span><span class="py-punctuation">,</span> <span class="py-variable">arr</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Reemplazar valores mayores a 10 con -1, y los demás con 0</span>
+<span class="py-variable">resultado_where</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">where</span><span class="py-punctuation">(</span><span class="py-variable">arr</span> <span class="py-operator">&gt;</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-operator">-</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Resultado con np.where:"</span><span class="py-punctuation">,</span> <span class="py-variable">resultado_where</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># También puedes pasar arrays como valor_si_true y valor_si_false</span>
+<span class="py-variable">arr_true</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">100</span><span class="py-punctuation">,</span> <span class="py-number">200</span><span class="py-punctuation">,</span> <span class="py-number">300</span><span class="py-punctuation">,</span> <span class="py-number">400</span><span class="py-punctuation">,</span> <span class="py-number">500</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">arr_false</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">11</span><span class="py-punctuation">,</span> <span class="py-number">22</span><span class="py-punctuation">,</span> <span class="py-number">33</span><span class="py-punctuation">,</span> <span class="py-number">44</span><span class="py-punctuation">,</span> <span class="py-number">55</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">resultado_where_arrays</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">where</span><span class="py-punctuation">(</span><span class="py-variable">arr</span> <span class="py-operator">&lt;=</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-variable">arr_true</span><span class="py-punctuation">,</span> <span class="py-variable">arr_false</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"np.where con arrays:"</span><span class="py-punctuation">,</span> <span class="py-variable">resultado_where_arrays</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Array original: [ 1  5 10 15 20]
+Resultado con np.where: [ 0  0  0 -1 -1]
+np.where con arrays: [100 200 300  44  55]</div>
+                <div class="tip-box"><code>np.where</code> es muy eficiente para la manipulación condicional de datos en arrays.</div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Encontrando Elementos Únicos: np.unique() -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">💎</span>
+                <h2 class="card-title">Elementos Únicos: <span class="numpy-concept"><code>np.unique()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>La función <code>np.unique(arr)</code> devuelve los elementos <span class="highlight">únicos y ordenados</span> de un array.</p>
+                <p>Es útil para identificar los distintos valores presentes en tus datos o para eliminar duplicados.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">datos_con_duplicados</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Datos originales:"</span><span class="py-punctuation">,</span> <span class="py-variable">datos_con_duplicados</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">unicos</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">unique</span><span class="py-punctuation">(</span><span class="py-variable">datos_con_duplicados</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Elementos únicos:"</span><span class="py-punctuation">,</span> <span class="py-variable">unicos</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># También puede devolver los índices de la primera aparición y las cuentas</span>
+<span class="py-variable">unicos</span><span class="py-punctuation">,</span> <span class="py-variable">indices</span><span class="py-punctuation">,</span> <span class="py-variable">cuentas</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">unique</span><span class="py-punctuation">(</span><span class="py-variable">datos_con_duplicados</span><span class="py-punctuation">,</span> <span class="py-parameter">return_index</span><span class="py-operator">=</span><span class="py-boolean-none">True</span><span class="py-punctuation">,</span> <span class="py-parameter">return_counts</span><span class="py-operator">=</span><span class="py-boolean-none">True</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nUnicos con detalles:"</span><span class="py-punctuation">,</span> <span class="py-variable">unicos</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Índices de primera aparición:"</span><span class="py-punctuation">,</span> <span class="py-variable">indices</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Conteos de cada único:"</span><span class="py-punctuation">,</span> <span class="py-variable">cuentas</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Datos originales: [1 2 2 3 4 4 4 5 1]
+Elementos únicos: [1 2 3 4 5]
+
+Unicos con detalles: [1 2 3 4 5]
+Índices de primera aparición: [0 1 3 4 7]
+Conteos de cada único: [2 2 1 3 1]</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Manejando Valores Especiales: isnan(), isinf() -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🚫</span>
+                <h2 class="card-title">Valores Especiales: <span class="numpy-concept"><code>isnan()</code>, <code>isinf()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>En cálculos numéricos, a veces te encontrarás con valores especiales como <code>NaN</code> (Not a Number) o <code>inf</code> (infinito).</p>
+                <ul>
+                    <li><strong><code>np.nan</code></strong>: Representa un valor indefinido o no representable (ej. resultado de 0/0).</li>
+                    <li><strong><code>np.inf</code></strong>: Representa infinito positivo (ej. resultado de 1/0).</li>
+                    <li><strong><code>-np.inf</code></strong>: Representa infinito negativo.</li>
+                </ul>
+                <p>NumPy proporciona funciones para detectar estos valores:</p>
+                <ul>
+                    <li><strong><code>np.isnan(arr)</code></strong>: Devuelve un array booleano indicando si cada elemento es <code>NaN</code>.</li>
+                    <li><strong><code>np.isinf(arr)</code></strong>: Devuelve un array booleano indicando si cada elemento es infinito (positivo o negativo).</li>
+                    <li><strong><code>np.isfinite(arr)</code></strong>: Devuelve un array booleano indicando si cada elemento es finito (ni <code>NaN</code> ni <code>inf</code>).</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">datos_con_especiales</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1.0</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="py-number">3.0</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">inf</span><span class="py-punctuation">,</span> <span class="py-operator">-</span><span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">inf</span><span class="py-punctuation">,</span> <span class="py-number">5.0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Datos originales:"</span><span class="py-punctuation">,</span> <span class="py-variable">datos_con_especiales</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\n¿Es NaN?:"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">isnan</span><span class="py-punctuation">(</span><span class="py-variable">datos_con_especiales</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¿Es Infinito?:"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">isinf</span><span class="py-punctuation">(</span><span class="py-variable">datos_con_especiales</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¿Es Finito?:"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">isfinite</span><span class="py-punctuation">(</span><span class="py-variable">datos_con_especiales</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Filtrar valores NaN</span>
+<span class="py-variable">datos_sin_nan</span> <span class="py-operator">=</span> <span class="py-variable">datos_con_especiales</span><span class="py-punctuation">[</span><span class="py-operator">~</span><span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">isnan</span><span class="py-punctuation">(</span><span class="py-variable">datos_con_especiales</span><span class="py-punctuation">)</span><span class="py-punctuation">]</span> <span class="py-comment"># ~ es el operador NOT bitwise</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nDatos sin NaN:"</span><span class="py-punctuation">,</span> <span class="py-variable">datos_sin_nan</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Datos originales: [  1.  nan   3.  inf -inf   5.]
+
+¿Es NaN?: [False  True False False False False]
+¿Es Infinito?: [False False False  True  True False]
+¿Es Finito?: [ True False  True False False  True]
+
+Datos sin NaN: [  1.   3.  inf -inf   5.]</div>
+                 <div class="warning-box">Las comparaciones directas con <code>np.nan</code> (ej. <code>x == np.nan</code>) siempre devuelven <code>False</code>. ¡Usa siempre <code>np.isnan()</code> para verificar si hay NaN!</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Ordenando Arrays: np.sort() y np.argsort() -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2 class="card-title">Ordenando Arrays: <span class="numpy-concept"><code>sort()</code> y <code>argsort()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>NumPy ofrece funciones eficientes para ordenar arrays:</p>
+                <ul>
+                    <li><strong><code>np.sort(arr)</code></strong>: Devuelve una <span class="highlight">copia ordenada</span> del array. No modifica el original.</li>
+                    <li><strong><code>arr.sort()</code></strong>: Ordena el array <span class="highlight">en el lugar</span> (modifica el original) y no devuelve nada (devuelve <code>None</code>).</li>
+                    <li><strong><code>np.argsort(arr)</code></strong>: Devuelve los <span class="highlight">índices</span> que ordenarían el array original.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">desordenado</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">9</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array desordenado:"</span><span class="py-punctuation">,</span> <span class="py-variable">desordenado</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># np.sort() devuelve una copia ordenada</span>
+<span class="py-variable">ordenado_copia</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sort</span><span class="py-punctuation">(</span><span class="py-variable">desordenado</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Ordenado (copia):"</span><span class="py-punctuation">,</span> <span class="py-variable">ordenado_copia</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original después de np.sort():"</span><span class="py-punctuation">,</span> <span class="py-variable">desordenado</span><span class="py-punctuation">)</span> <span class="py-comment"># No cambia</span>
+
+<span class="py-comment"># arr.sort() ordena en el lugar</span>
+<span class="py-variable">desordenado_para_inplace</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">8</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">desordenado_para_inplace</span><span class="py-punctuation">.</span><span class="py-method">sort</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nOrdenado en el lugar:"</span><span class="py-punctuation">,</span> <span class="py-variable">desordenado_para_inplace</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># np.argsort() devuelve índices</span>
+<span class="py-variable">indices_orden</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">argsort</span><span class="py-punctuation">(</span><span class="py-variable">desordenado</span><span class="py-punctuation">)</span> <span class="py-comment"># Usa el 'desordenado' original</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nÍndices para ordenar 'desordenado':"</span><span class="py-punctuation">,</span> <span class="py-variable">indices_orden</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array ordenado usando argsort:"</span><span class="py-punctuation">,</span> <span class="py-variable">desordenado</span><span class="py-punctuation">[</span><span class="py-variable">indices_orden</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Array desordenado: [3 1 4 1 5 9 2 6]
+Ordenado (copia): [1 1 2 3 4 5 6 9]
+Original después de np.sort(): [3 1 4 1 5 9 2 6]
+
+Ordenado en el lugar: [0 5 8]
+
+Índices para ordenar 'desordenado': [1 3 6 0 2 4 7 5]
+Array ordenado usando argsort: [1 1 2 3 4 5 6 9]</div>
+                <p>Para arrays 2D, puedes especificar <code>axis=0</code> (ordenar por columnas) o <code>axis=1</code> (ordenar por filas).</p>
+            </div>
+        </div>
+
+        <!-- Paso 5: Generación de Números Aleatorios -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎲</span>
+                <h2 class="card-title">Generación de Números <span class="numpy-concept">Aleatorios</span></h2>
+            </div>
+            <div class="card-content">
+                <p>NumPy tiene un potente módulo <code>np.random</code> para generar números aleatorios, lo cual es esencial para simulaciones, muestreo, y muchas otras tareas.</p>
+                <ul>
+                    <li><strong><code>np.random.rand(d0, d1, ..., dn)</code></strong>: Crea un array de la forma dada con números aleatorios de una distribución uniforme entre 0 (inclusivo) y 1 (exclusivo).</li>
+                    <li><strong><code>np.random.randn(d0, d1, ..., dn)</code></strong>: Similar, pero de una distribución normal estándar (media 0, desviación estándar 1).</li>
+                    <li><strong><code>np.random.randint(bajo, alto=None, size=None, dtype=int)</code></strong>: Devuelve enteros aleatorios desde <code>bajo</code> (inclusivo) hasta <code>alto</code> (exclusivo). Si <code>alto</code> es <code>None</code>, el rango es <code>[0, bajo)</code>. <code>size</code> define la forma del array resultante.</li>
+                    <li><strong><code>np.random.seed(semilla)</code></strong>: Fija la "semilla" del generador de números aleatorios. Esto es crucial para la <span class="highlight">reproducibilidad</span>: si usas la misma semilla, obtendrás la misma secuencia de números "aleatorios" cada vez que ejecutes el código.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Para resultados reproducibles</span>
+<span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">seed</span><span class="py-punctuation">(</span><span class="py-number">42</span><span class="py-punctuation">)</span> 
+
+<span class="py-comment"># Array 1D de 5 números aleatorios uniformes</span>
+<span class="py-variable">aleatorios_uniformes</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">5</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Aleatorios uniformes [0,1):"</span><span class="py-punctuation">,</span> <span class="py-variable">aleatorios_uniformes</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Matriz 2x3 de números aleatorios normales</span>
+<span class="py-variable">aleatorios_normales</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">randn</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nAleatorios normales (media 0, std 1):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">aleatorios_normales</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># 3 enteros aleatorios entre 1 (incluido) y 7 (excluido)</span>
+<span class="py-variable">enteros_aleatorios</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">randint</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">7</span><span class="py-punctuation">,</span> <span class="py-parameter">size</span><span class="py-operator">=</span><span class="py-number">3</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nEnteros aleatorios [1,7):"</span><span class="py-punctuation">,</span> <span class="py-variable">enteros_aleatorios</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada (los números exactos dependerán de la semilla, pero deberían ser los mismos si ejecutas esto con la semilla 42):</p>
+                <div class="output-block">Aleatorios uniformes [0,1): [0.37454012 0.95071431 0.73199394 0.59865848 0.15601864]
+
+Aleatorios normales (media 0, std 1):
+ [[ 0.05808361  0.86617615  0.60111501]
+ [-0.70807258 -0.02058848  0.26551159]]
+
+Enteros aleatorios [1,7): [3 5 1]</div>
+            </div>
+        </div>
+
+        <!-- Paso 6: Resumen Final -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Funciones Útiles de NumPy</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has aprendido varias funciones de NumPy muy prácticas!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">❔</span>
+                        <strong><code>np.where()</code></strong><br>
+                        Lógica condicional vectorizada.
+                        <code>np.where(cond, v_true, v_false)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">💎</span>
+                        <strong><code>np.unique()</code></strong><br>
+                        Encuentra elementos únicos (y ordenados).
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🚫</span>
+                        <strong><code>isnan</code>, <code>isinf</code></strong><br>
+                        Detecta NaN e Infinitos.
+                        <code>np.isnan(arr)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📊</span>
+                        <strong><code>np.sort()</code></strong><br>
+                        Devuelve copia ordenada.
+                        <code>arr.sort()</code> (en el lugar)
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🔢</span>
+                        <strong><code>np.argsort()</code></strong><br>
+                        Devuelve índices para ordenar.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🎲</span>
+                        <strong><code>np.random</code></strong><br>
+                        Genera números aleatorios (<code>rand</code>, <code>randint</code>).
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🌱</span>
+                        <strong><code>np.random.seed()</code></strong><br>
+                        Fija semilla para reproducibilidad.
+                    </div>
+                </div>
+                <p>Estas funciones son herramientas valiosas para el preprocesamiento de datos, análisis y simulaciones.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 7 lógicamente) -->
+        <div class="card" data-step="7">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Semana Completada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Felicidades, has completado todos los modulos de la semana 2 correspondiente a la introducción de Numpy!</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¡Tu Aventura con Python Continúa!</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Con los conocimientos de NumPy, estás mucho mejor preparado para adentrarte en librerías más avanzadas de análisis de datos como <strong>Pandas</strong>, visualización con <strong>Matplotlib</strong>, y mas preparados para llegar a trabajar con <strong>Machine Learning</strong>.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                    <p>¡Sigamos avanzando con el diplomado!</p>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 6; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Finalizar Serie NumPy 🏆';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

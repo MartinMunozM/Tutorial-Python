@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Operaciones Matemáticas con Arrays en NumPy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '➕'; /* Icono para Operaciones Matemáticas */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .numpy-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (NumPy)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } /* +, -, *, /, **, etc. */
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} 
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Operaciones Matemáticas con Arrays</h1>
+            <p>Aprende a realizar cálculos eficientes con NumPy</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Operaciones Element-wise (Vectorización) -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">💨</span>
+                <h2 class="card-title">Operaciones <span class="numpy-concept">Element-wise</span> (Vectorización)</h2>
+            </div>
+            <div class="card-content">
+                <p>Una de las grandes ventajas de NumPy es su capacidad para realizar operaciones matemáticas <span class="highlight">elemento a elemento</span> (element-wise) sobre arrays completos, sin necesidad de escribir bucles explícitos en Python. Esto se conoce como <strong>vectorización</strong> y es mucho más rápido.</p>
+                <p>Puedes usar los operadores aritméticos estándar (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code> para potencia, etc.) directamente entre arrays o entre un array y un escalar (un solo número).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">arr1</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">arr2</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">40</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Suma entre arrays</span>
+<span class="py-variable">suma_arrays</span> <span class="py-operator">=</span> <span class="py-variable">arr1</span> <span class="py-operator">+</span> <span class="py-variable">arr2</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Suma: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">suma_arrays</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span> <span class="py-comment"># Salida: [11 22 33 44]</span>
+
+<span class="py-comment"># Multiplicación de array por escalar</span>
+<span class="py-variable">multiplicacion_escalar</span> <span class="py-operator">=</span> <span class="py-variable">arr1</span> <span class="py-operator">*</span> <span class="py-number">3</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Multiplicación por 3: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">multiplicacion_escalar</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span> <span class="py-comment"># Salida: [ 3  6  9 12]</span>
+
+<span class="py-comment"># Potencia elemento a elemento</span>
+<span class="py-variable">potencia_array</span> <span class="py-operator">=</span> <span class="py-variable">arr1</span> <span class="py-operator">**</span> <span class="py-number">2</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Potencia al cuadrado: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">potencia_array</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span> <span class="py-comment"># Salida: [ 1  4  9 16]</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Suma: [11 22 33 44]
+Multiplicación por 3: [ 3  6  9 12]
+Potencia al cuadrado: [ 1  4  9 16]</div>
+                <div class="tip-box">
+                    Para operaciones entre dos arrays, estos generalmente deben tener la misma forma (dimensiones y tamaño en cada dimensión) o ser compatibles para broadcasting (lo veremos a continuación).
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Broadcasting -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">📡</span>
+                <h2 class="card-title">Entendiendo el <span class="numpy-concept">Broadcasting</span></h2>
+            </div>
+            <div class="card-content">
+                <p>El <strong>broadcasting</strong> (difusión) es un conjunto de reglas que NumPy utiliza para permitir operaciones aritméticas entre arrays de <span class="highlight">diferentes formas</span> (tamaños y/o dimensiones), siempre que sean "compatibles".</p>
+                <p>En esencia, si un array tiene menos dimensiones o un tamaño de 1 en una dimensión particular, NumPy "estira" o "duplica" virtualmente ese array para que coincida con la forma del array más grande, sin crear copias en memoria.</p>
+                <p><strong>Ejemplo simple (ya visto): Array con escalar</strong></p>
+                <p>Cuando haces <code>arr1 * 3</code>, el escalar <code>3</code> se "difunde" para operar con cada elemento de <code>arr1</code>.</p>
+                <p><strong>Ejemplo: Sumar un vector a cada fila de una matriz</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">matriz</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+                      <span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+                      <span class="py-punctuation">[</span><span class="py-number">6</span><span class="py-punctuation">,</span> <span class="py-number">7</span><span class="py-punctuation">,</span> <span class="py-number">8</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Forma (3, 3)</span>
+
+<span class="py-variable">vector_fila</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Forma (3,)</span>
+
+<span class="py-comment"># El vector_fila (1D de 3 elementos) se "difunde" a cada fila de la matriz (3x3)</span>
+<span class="py-variable">resultado</span> <span class="py-operator">=</span> <span class="py-variable">matriz</span> <span class="py-operator">+</span> <span class="py-variable">vector_fila</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Matriz original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">matriz</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nVector fila:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">vector_fila</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nResultado de la suma (broadcasting):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">resultado</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Matriz original:
+ [[0 1 2]
+ [3 4 5]
+ [6 7 8]]
+
+Vector fila:
+ [10 20 30]
+
+Resultado de la suma (broadcasting):
+ [[10 21 32]
+ [13 24 35]
+ [16 27 38]]</div>
+                <div class="warning-box">
+                    <strong>Reglas de Broadcasting:</strong> Dos dimensiones son compatibles si son iguales, o si una de ellas es 1. NumPy compara las formas de los arrays elemento por elemento, comenzando desde las dimensiones finales (trailing dimensions). Si las dimensiones no son compatibles según estas reglas, obtendrás un <code>ValueError</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Funciones Matemáticas Universales (ufuncs) -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">∑</span>
+                <h2 class="card-title">Funciones Matemáticas <span class="numpy-concept">(ufuncs)</span></h2>
+            </div>
+            <div class="card-content">
+                <p>NumPy proporciona una gran cantidad de <strong>funciones universales (ufuncs)</strong> que operan elemento a elemento en arrays. Estas incluyen funciones trigonométricas, exponenciales, logarítmicas, estadísticas, etc.</p>
+                <p><strong>Funciones de Agregación Comunes:</strong></p>
+                <ul>
+                    <li><code>np.sum(arr)</code>: Suma de todos los elementos.</li>
+                    <li><code>np.mean(arr)</code>: Media (promedio) de los elementos.</li>
+                    <li><code>np.std(arr)</code>: Desviación estándar.</li>
+                    <li><code>np.min(arr)</code>: Valor mínimo.</li>
+                    <li><code>np.max(arr)</code>: Valor máximo.</li>
+                    <li><code>np.argmin(arr)</code>: Índice del valor mínimo.</li>
+                    <li><code>np.argmax(arr)</code>: Índice del valor máximo.</li>
+                </ul>
+                <p>Estas funciones también pueden operar a lo largo de un eje específico en arrays multidimensionales usando el argumento <code>axis</code> (<code>axis=0</code> para columnas, <code>axis=1</code> para filas).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">datos</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Suma total:"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sum</span><span class="py-punctuation">(</span><span class="py-variable">datos</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Media:"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">mean</span><span class="py-punctuation">(</span><span class="py-variable">datos</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Máximo:"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">max</span><span class="py-punctuation">(</span><span class="py-variable">datos</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nSuma por columnas (axis=0):"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sum</span><span class="py-punctuation">(</span><span class="py-variable">datos</span><span class="py-punctuation">,</span> <span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">0</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Suma por filas (axis=1):"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sum</span><span class="py-punctuation">(</span><span class="py-variable">datos</span><span class="py-punctuation">,</span> <span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">1</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Suma total: 21
+Media: 3.5
+Máximo: 6
+
+Suma por columnas (axis=0): [5 7 9]
+Suma por filas (axis=1): [ 6 15]</div>
+                <p>Otras ufuncs comunes incluyen <code>np.sqrt()</code> (raíz cuadrada), <code>np.exp()</code> (exponencial), <code>np.log()</code> (logaritmo), <code>np.sin()</code>, <code>np.cos()</code>, etc.</p>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Más sobre Broadcasting con Ejemplos -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">📏</span>
+                <h2 class="card-title">Más sobre <span class="numpy-concept">Broadcasting</span></h2>
+            </div>
+            <div class="card-content">
+                <p>El broadcasting es una característica poderosa, pero es importante entender cómo funciona para evitar errores inesperados.</p>
+                <p><strong>Reglas de Broadcasting (resumidas):</strong></p>
+                <ol>
+                    <li>Si los arrays no tienen el mismo número de dimensiones, se anteponen unos a la forma del array con menos dimensiones hasta que tengan el mismo número.</li>
+                    <li>Dos arrays son compatibles en una dimensión si:
+                        <ul>
+                            <li>Son de igual tamaño en esa dimensión.</li>
+                            <li>Uno de ellos tiene tamaño 1 en esa dimensión.</li>
+                        </ul>
+                    </li>
+                    <li>Si no se cumplen estas condiciones para todas las dimensiones, se produce un <code>ValueError</code>.</li>
+                </ol>
+                <p><strong>Ejemplo: Sumar un vector columna a una matriz</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">matriz</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Forma (2, 3)</span>
+<span class="py-variable">vector_columna</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">20</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>    <span class="py-comment"># Forma (2, 1)</span>
+
+<span class="py-comment"># El vector_columna se "difunde" a cada columna de la matriz</span>
+<span class="py-variable">resultado</span> <span class="py-operator">=</span> <span class="py-variable">matriz</span> <span class="py-operator">+</span> <span class="py-variable">vector_columna</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Matriz:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">matriz</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nVector columna:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">vector_columna</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nResultado:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">resultado</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Matriz:
+ [[1 2 3]
+ [4 5 6]]
+
+Vector columna:
+ [[10]
+ [20]]
+
+Resultado:
+ [[11 12 13]
+ [24 25 26]]</div>
+                <div class="tip-box">
+                    Si necesitas forzar una dimensión para broadcasting, puedes usar <code>np.newaxis</code> o <code>None</code> al indexar. Por ejemplo, si <code>v = np.array([1,2,3])</code>, entonces <code>v[:, np.newaxis]</code> lo convierte en un vector columna de forma (3,1).
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Operaciones Matemáticas</h2>
+            </div>
+            <div class="card-content">
+                <p>NumPy hace que los cálculos numéricos sean eficientes y expresivos.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">💨</span>
+                        <strong>Vectorización</strong><br>
+                        Operaciones elemento a elemento sin bucles explícitos.
+                        <code>arr1 + arr2</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📡</span>
+                        <strong>Broadcasting</strong><br>
+                        Operaciones entre arrays de formas compatibles.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">➕➖</span>
+                        <strong>Operadores</strong><br>
+                        <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code>
+                        funcionan directamente.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">∑</span>
+                        <strong>Funciones (ufuncs)</strong><br>
+                        <code>np.sum()</code>, <code>np.mean()</code>,
+                        <code>np.std()</code>, etc.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📊</span>
+                        <strong>Agregaciones</strong><br>
+                        <code>np.min()</code>, <code>np.max()</code>
+                        <code>np.argmin()</code>, <code>np.argmax()</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📐</span>
+                        <strong>Argumento <code>axis</code></strong><br>
+                        Operar por filas (<code>axis=1</code>) o columnas (<code>axis=0</code>).
+                    </div>
+                </div>
+                <p>Dominar estas operaciones y el broadcasting te permitirá realizar análisis de datos complejos de manera eficiente.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Operaciones Dominadas!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ahora puedes realizar cálculos matemáticos eficientes con arrays de NumPy.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El siguiente módulo se enfocará en la <strong>Manipulación de Arrays</strong>, donde aprenderás a cambiar su forma, combinarlos, dividirlos y otras transformaciones útiles.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con NumPy ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

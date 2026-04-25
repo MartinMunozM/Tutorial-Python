@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Manipulación de Arrays en NumPy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🔧'; /* Icono para Manipulación (llave inglesa) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .numpy-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (NumPy)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* .reshape, .T, etc. */
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">6</span>
+            </div>
+            <h1>Tutorial: Manipulación de Arrays en NumPy</h1>
+            <p>Aprende a transformar la forma y estructura de tus arrays</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Cambiando la Forma: .reshape() -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🔄</span>
+                <h2 class="card-title">Cambiando la Forma: <span class="numpy-concept"><code>.reshape()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una de las tareas más comunes es cambiar la forma (dimensiones) de un array sin cambiar sus datos. El método <code>.reshape()</code> es perfecto para esto.</p>
+                <p>La nueva forma debe ser compatible con el número total de elementos del array original.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">a</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">arange</span><span class="py-punctuation">(</span><span class="py-number">12</span><span class="py-punctuation">)</span> <span class="py-comment"># Array de 0 a 11</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original (1D de 12 elementos):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Cambiar a una matriz de 3 filas y 4 columnas (3*4 = 12)</span>
+<span class="py-variable">b</span> <span class="py-operator">=</span> <span class="py-variable">a</span><span class="py-punctuation">.</span><span class="py-method">reshape</span><span class="py-punctuation">(</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nReshape a (3, 4):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">b</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Cambiar a una matriz de 4 filas y 3 columnas (4*3 = 12)</span>
+<span class="py-variable">c</span> <span class="py-operator">=</span> <span class="py-variable">a</span><span class="py-punctuation">.</span><span class="py-method">reshape</span><span class="py-punctuation">(</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nReshape a (4, 3):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">c</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Puedes usar -1 en una dimensión y NumPy calculará el tamaño</span>
+<span class="py-variable">d</span> <span class="py-operator">=</span> <span class="py-variable">a</span><span class="py-punctuation">.</span><span class="py-method">reshape</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-operator">-</span><span class="py-number">1</span><span class="py-punctuation">)</span> <span class="py-comment"># NumPy calcula que la segunda dimensión es 6</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nReshape a (2, -1) -> (2, 6):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">d</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Original (1D de 12 elementos):
+ [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+Reshape a (3, 4):
+ [[ 0  1  2  3]
+ [ 4  5  6  7]
+ [ 8  9 10 11]]
+
+Reshape a (4, 3):
+ [[ 0  1  2]
+ [ 3  4  5]
+ [ 6  7  8]
+ [ 9 10 11]]
+
+Reshape a (2, -1) -&gt; (2, 6):
+ [[ 0  1  2  3  4  5]
+ [ 6  7  8  9 10 11]]</div>
+                <div class="tip-box"><code>.reshape()</code> devuelve una <span class="highlight">vista</span> del array original si es posible (si los datos no necesitan ser copiados). Si cambias la vista, el original también puede cambiar.</div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Aplanando Arrays: .ravel() y .flatten() -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">➖</span>
+                <h2 class="card-title">Aplanando Arrays: <span class="numpy-concept"><code>.ravel()</code> y <code>.flatten()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>A veces necesitas convertir un array multidimensional en un array 1D (aplanarlo). NumPy ofrece dos métodos principales para esto:</p>
+                <ul>
+                    <li><strong><code>.ravel()</code></strong>: Devuelve una <span class="highlight">vista</span> del array original (si es posible). Las modificaciones a la vista afectarán al original. Es generalmente más rápido.</li>
+                    <li><strong><code>.flatten()</code></strong>: Siempre devuelve una <span class="highlight">copia</span> del array original. Las modificaciones al array aplanado no afectarán al original.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">matriz</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Matriz original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">matriz</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">aplanado_ravel</span> <span class="py-operator">=</span> <span class="py-variable">matriz</span><span class="py-punctuation">.</span><span class="py-method">ravel</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nAplanado con ravel():"</span><span class="py-punctuation">,</span> <span class="py-variable">aplanado_ravel</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">aplanado_flatten</span> <span class="py-operator">=</span> <span class="py-variable">matriz</span><span class="py-punctuation">.</span><span class="py-method">flatten</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Aplanado con flatten():"</span><span class="py-punctuation">,</span> <span class="py-variable">aplanado_flatten</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Modificando la vista de ravel</span>
+<span class="py-variable">aplanado_ravel</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">99</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nMatriz original después de modificar ravel:"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">matriz</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Modificando la copia de flatten</span>
+<span class="py-variable">aplanado_flatten</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">77</span> <span class="py-comment"># Esto era 99 por la modificación anterior de la matriz</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nMatriz original después de modificar flatten:"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">matriz</span><span class="py-punctuation">)</span> <span class="py-comment"># No cambia</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Flatten modificado:"</span><span class="py-punctuation">,</span> <span class="py-variable">aplanado_flatten</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Matriz original:
+ [[1 2 3]
+ [4 5 6]]
+
+Aplanado con ravel(): [1 2 3 4 5 6]
+Aplanado con flatten(): [1 2 3 4 5 6]
+
+Matriz original después de modificar ravel:
+ [[99  2  3]
+ [ 4  5  6]]
+
+Matriz original después de modificar flatten:
+ [[99  2  3]
+ [ 4  5  6]]
+Flatten modificado: [77 2 3 4 5 6]</div>
+                 <div class="tip-box">Elige <code>.ravel()</code> si la eficiencia es crítica y no necesitas una copia. Usa <code>.flatten()</code> si necesitas un array aplanado independiente del original.</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Transponiendo Arrays: .transpose() y .T -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">⇆</span>
+                <h2 class="card-title">Transponiendo Arrays: <span class="numpy-concept"><code>.transpose()</code> y <code>.T</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>La transposición de un array intercambia sus ejes. Para una matriz 2D, esto significa que las filas se convierten en columnas y las columnas en filas.</p>
+                <p>NumPy ofrece el método <code>.transpose()</code> y el atributo <code>.T</code> (que es un atajo).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">matriz_original</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># (2, 3)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Matriz original (2x3):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">matriz_original</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Usando .transpose()</span>
+<span class="py-variable">transpuesta1</span> <span class="py-operator">=</span> <span class="py-variable">matriz_original</span><span class="py-punctuation">.</span><span class="py-method">transpose</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nTranspuesta con .transpose() (3x2):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">transpuesta1</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Usando el atributo .T</span>
+<span class="py-variable">transpuesta2</span> <span class="py-operator">=</span> <span class="py-variable">matriz_original</span><span class="py-punctuation">.</span><span class="py-variable">T</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nTranspuesta con .T (3x2):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">transpuesta2</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Matriz original (2x3):
+ [[1 2 3]
+ [4 5 6]]
+
+Transpuesta con .transpose() (3x2):
+ [[1 4]
+ [2 5]
+ [3 6]]
+
+Transpuesta con .T (3x2):
+ [[1 4]
+ [2 5]
+ [3 6]]</div>
+                <div class="tip-box">
+                    Tanto <code>.transpose()</code> como <code>.T</code> devuelven una <span class="highlight">vista</span> del array original si es posible.
+                    Para arrays de más de 2 dimensiones, <code>.transpose()</code> puede tomar argumentos para especificar el nuevo orden de los ejes.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Combinando Arrays -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🔗</span>
+                <h2 class="card-title">Combinando Arrays: <span class="numpy-concept"><code>concatenate</code>, <code>vstack</code>, <code>hstack</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>NumPy ofrece varias formas de combinar o unir arrays existentes:</p>
+                <ul>
+                    <li><strong><code>np.concatenate((arr1, arr2, ...), axis=0)</code></strong>: Une una secuencia de arrays a lo largo de un eje existente.
+                        <ul>
+                            <li><code>axis=0</code>: Une por filas (apila verticalmente).</li>
+                            <li><code>axis=1</code>: Une por columnas (apila horizontalmente).</li>
+                            <li>Los arrays deben tener la misma forma, excepto en la dimensión de concatenación.</li>
+                        </ul>
+                    </li>
+                    <li><strong><code>np.vstack((arr1, arr2, ...))</code></strong>: Apila arrays verticalmente (por filas). Es un atajo para <code>np.concatenate</code> con <code>axis=0</code>.</li>
+                    <li><strong><code>np.hstack((arr1, arr2, ...))</code></strong>: Apila arrays horizontalmente (por columnas). Es un atajo para <code>np.concatenate</code> con <code>axis=1</code>.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">a1</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">a2</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># (1,2) para concatenar por filas</span>
+<span class="py-variable">a3</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">7</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">8</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># (2,1) para concatenar por columnas con a1</span>
+
+<span class="py-comment"># Concatenar por filas (axis=0)</span>
+<span class="py-variable">conc_filas</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">concatenate</span><span class="py-punctuation">(</span><span class="py-punctuation">(</span><span class="py-variable">a1</span><span class="py-punctuation">,</span> <span class="py-variable">a2</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">0</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Concatenado por filas (axis=0):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">conc_filas</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Concatenar por columnas (axis=1)</span>
+<span class="py-variable">conc_columnas</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">concatenate</span><span class="py-punctuation">(</span><span class="py-punctuation">(</span><span class="py-variable">a1</span><span class="py-punctuation">,</span> <span class="py-variable">a3</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">1</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nConcatenado por columnas (axis=1):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">conc_columnas</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Usando vstack y hstack</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nvstack:\n"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">vstack</span><span class="py-punctuation">(</span><span class="py-punctuation">(</span><span class="py-variable">a1</span><span class="py-punctuation">,</span> <span class="py-variable">a2</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nhstack:\n"</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">hstack</span><span class="py-punctuation">(</span><span class="py-punctuation">(</span><span class="py-variable">a1</span><span class="py-punctuation">,</span> <span class="py-variable">a3</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block">Concatenado por filas (axis=0):
+ [[1 2]
+ [3 4]
+ [5 6]]
+
+Concatenado por columnas (axis=1):
+ [[1 2 7]
+ [3 4 8]]
+
+vstack:
+ [[1 2]
+ [3 4]
+ [5 6]]
+
+hstack:
+ [[1 2 7]
+ [3 4 8]]</div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Eliminando y Añadiendo Dimensiones -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">↕️</span>
+                <h2 class="card-title">Añadir/Eliminar Dimensiones: <span class="numpy-concept"><code>squeeze</code>, <code>expand_dims</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>A veces necesitas manipular las dimensiones de un array sin cambiar el número total de elementos.</p>
+                <ul>
+                    <li><strong><code>np.squeeze(arr, axis=None)</code></strong>: Elimina las dimensiones de tamaño 1 de un array.
+                        <ul>
+                            <li>Si <code>axis</code> no se especifica, elimina todas las dimensiones de tamaño 1.</li>
+                            <li>Si <code>axis</code> es una tupla de enteros, solo elimina las dimensiones especificadas si son de tamaño 1.</li>
+                        </ul>
+                    </li>
+                    <li><strong><code>np.expand_dims(arr, axis)</code></strong>: Expande la forma del array insertando un nuevo eje (dimensión) en la posición <code>axis</code> especificada.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">arr_con_dims_extra</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Forma (1, 1, 3)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Original (forma </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">arr_con_dims_extra</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">):\n</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">arr_con_dims_extra</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">apretado</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">squeeze</span><span class="py-punctuation">(</span><span class="py-variable">arr_con_dims_extra</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"\nCon squeeze (forma </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">apretado</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">):\n</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">apretado</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">arr_1d</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">,</span> <span class="py-number">7</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Forma (3,)</span>
+<span class="py-variable">expandido_fila</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">expand_dims</span><span class="py-punctuation">(</span><span class="py-variable">arr_1d</span><span class="py-punctuation">,</span> <span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">0</span><span class="py-punctuation">)</span> <span class="py-comment"># Nuevo eje como primera dimensión -> (1, 3)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"\nExpandido a fila (forma </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">expandido_fila</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">):\n</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">expandido_fila</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">expandido_col</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">expand_dims</span><span class="py-punctuation">(</span><span class="py-variable">arr_1d</span><span class="py-punctuation">,</span> <span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">1</span><span class="py-punctuation">)</span>  <span class="py-comment"># Nuevo eje como segunda dimensión -> (3, 1)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"\nExpandido a columna (forma </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">expandido_col</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">):\n</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">expandido_col</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Original (forma (1, 1, 3)):
+ [[[1 2 3]]]
+
+Con squeeze (forma (3,)):
+ [1 2 3]
+
+Expandido a fila (forma (1, 3)):
+ [[5 6 7]]
+
+Expandido a columna (forma (3, 1)):
+ [[5]
+ [6]
+ [7]]</div>
+                <div class="tip-box">
+                    También puedes usar <code>None</code> o <code>np.newaxis</code> con slicing para expandir dimensiones. Por ejemplo, <code>arr_1d[:, np.newaxis]</code> es igual a <code>np.expand_dims(arr_1d, axis=1)</code>.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 6: Resumen Final -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Manipulación de Arrays</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has aprendido técnicas clave para transformar tus arrays en NumPy!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🔄</span>
+                        <strong><code>.reshape()</code></strong><br>
+                        Cambia la forma del array.
+                        <code>arr.reshape(f, c)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">➖</span>
+                        <strong><code>.ravel()</code></strong><br>
+                        Aplanar a 1D (vista).
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📄</span>
+                        <strong><code>.flatten()</code></strong><br>
+                        Aplanar a 1D (copia).
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⇆</span>
+                        <strong><code>.transpose()</code> / <code>.T</code></strong><br>
+                        Intercambia ejes (filas x cols).
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🔗</span>
+                        <strong><code>np.concatenate()</code></strong><br>
+                        Unir arrays por un eje.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🧱</span>
+                        <strong><code>vstack</code> / <code>hstack</code></strong><br>
+                        Apilar vertical/horizontalmente.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🤏</span>
+                        <strong><code>np.squeeze()</code></strong><br>
+                        Elimina dimensiones de tamaño 1.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">➕</span>
+                        <strong><code>np.expand_dims()</code></strong><br>
+                        Añade una nueva dimensión.
+                    </div>
+                </div>
+                <p>Estas herramientas son fundamentales para preparar tus datos para análisis y algoritmos más avanzados.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 7 lógicamente) -->
+        <div class="card" data-step="7">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Manipulación Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ahora puedes remodelar y reestructurar tus arrays de NumPy con confianza.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El último módulo de esta serie de NumPy cubrirá algunas <strong>Funciones Útiles y Prácticas</strong> que te ayudarán a realizar tareas comunes como encontrar elementos únicos, manejar valores NaN, y aplicar lógica condicional de forma eficiente.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 6; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con NumPy ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

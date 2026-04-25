@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Indexación y Slicing en NumPy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🎯'; /* Icono para Indexación/Slicing (diana) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .numpy-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (NumPy)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } /* [], : , */
+        .code-block .py-method { color: #DCDCAA;} 
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">6</span>
+            </div>
+            <h1>Tutorial: Indexación y Slicing en NumPy</h1>
+            <p>Aprende a acceder y seleccionar datos dentro de tus arrays de NumPy</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué es Indexación y Slicing? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🔎</span>
+                <h2 class="card-title">¿Qué es Indexación y Slicing?</h2>
+            </div>
+            <div class="card-content">
+                <p>Una vez que has creado un array de NumPy, el siguiente paso fundamental es aprender a <span class="highlight">acceder y seleccionar</span> sus elementos o subconjuntos de elementos.</p>
+                <ul>
+                    <li><strong>Indexación (Indexing):</strong> Se refiere a acceder a un elemento individual del array usando su posición (índice).</li>
+                    <li><strong>Slicing (Rebanado):</strong> Permite obtener una "rebanada" o un subconjunto de elementos del array, especificando un rango de índices.</li>
+                </ul>
+                <p>Estas operaciones son cruciales para analizar, modificar y trabajar con los datos almacenados en tus arrays.</p>
+                <p>En este tutorial, veremos cómo funcionan en arrays de 1D (vectores) y 2D (matrices), además de técnicas más avanzadas como la indexación booleana.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Array de ejemplo que usaremos</span>
+<span class="py-variable">mi_array</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">40</span><span class="py-punctuation">,</span> <span class="py-number">50</span><span class="py-punctuation">,</span> <span class="py-number">60</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array de ejemplo:"</span><span class="py-punctuation">,</span> <span class="py-variable">mi_array</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Array de ejemplo: [10 20 30 40 50 60]</div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Indexación Básica (1D y 2D) -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">👆</span>
+                <h2 class="card-title">Indexación Básica <span class="numpy-concept">(1D y 2D)</span></h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Arrays 1D (Vectores):</strong></p>
+                <p>La indexación en arrays 1D es similar a las listas de Python. Los índices comienzan en <code>0</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">array_1d</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">15</span><span class="py-punctuation">,</span> <span class="py-number">25</span><span class="py-punctuation">,</span> <span class="py-number">35</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Primer elemento:"</span><span class="py-punctuation">,</span> <span class="py-variable">array_1d</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Tercer elemento:"</span><span class="py-punctuation">,</span> <span class="py-variable">array_1d</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Último elemento:"</span><span class="py-punctuation">,</span> <span class="py-variable">array_1d</span><span class="py-punctuation">[</span><span class="py-operator">-</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Primer elemento: 5
+Tercer elemento: 25
+Último elemento: 35</div>
+
+                <p><strong>Arrays 2D (Matrices):</strong></p>
+                <p>Para arrays 2D, puedes usar una coma para separar los índices de las filas y columnas: <code>array[fila, columna]</code>.</p>
+                 <div class="code-block"><pre><code class="language-python"><span class="py-variable">array_2d</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">7</span><span class="py-punctuation">,</span> <span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">9</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array 2D:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">array_2d</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Elemento en la fila 0, columna 1</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nElemento en [0, 1]:"</span><span class="py-punctuation">,</span> <span class="py-variable">array_2d</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Elemento en la fila 2, columna 0</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Elemento en [2, 0]:"</span><span class="py-punctuation">,</span> <span class="py-variable">array_2d</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Array 2D:
+ [[1 2 3]
+ [4 5 6]
+ [7 8 9]]
+
+Elemento en [0, 1]: 2
+Elemento en [2, 0]: 7</div>
+                <div class="tip-box">También puedes usar <code>array[fila][columna]</code>, pero <code>array[fila, columna]</code> es más eficiente y la forma recomendada en NumPy.</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Slicing (Rebanado) -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🔪</span>
+                <h2 class="card-title">Slicing (Rebanado) <span class="numpy-concept"><code>[inicio:fin:paso]</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>El slicing te permite seleccionar un subconjunto de un array. La sintaxis es <code>array[inicio:fin:paso]</code>:</p>
+                <ul>
+                    <li><code>inicio</code>: El índice donde comienza la rebanada (incluido). Si se omite, es 0.</li>
+                    <li><code>fin</code>: El índice donde termina la rebanada (<span class="highlight">excluido</span>). Si se omite, va hasta el final.</li>
+                    <li><code>paso</code>: El tamaño del salto entre elementos. Si se omite, es 1.</li>
+                </ul>
+                <p><strong>Slicing en Arrays 1D:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">a</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">arange</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span>  <span class="py-comment"># Array: [0 1 2 3 4 5 6 7 8 9]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array original:"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Elementos desde el índice 2 hasta el 4 (excluido):"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">:</span><span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Primeros 3 elementos:"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">[</span><span class="py-punctuation">:</span><span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Elementos desde el índice 5 hasta el final:"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">[</span><span class="py-number">5</span><span class="py-punctuation">:</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Todos los elementos, con paso 2:"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">[</span><span class="py-punctuation">:</span><span class="py-punctuation">:</span><span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array invertido:"</span><span class="py-punctuation">,</span> <span class="py-variable">a</span><span class="py-punctuation">[</span><span class="py-punctuation">:</span><span class="py-punctuation">:</span><span class="py-operator">-</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Array original: [0 1 2 3 4 5 6 7 8 9]
+Elementos desde el índice 2 hasta el 4 (excluido): [2 3]
+Primeros 3 elementos: [0 1 2]
+Elementos desde el índice 5 hasta el final: [5 6 7 8 9]
+Todos los elementos, con paso 2: [0 2 4 6 8]
+Array invertido: [9 8 7 6 5 4 3 2 1 0]</div>
+
+                <p><strong>Slicing en Arrays 2D:</strong> Se aplica por cada dimensión, separado por comas: <code>array[fila_inicio:fila_fin, col_inicio:col_fin]</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">b</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span><span class="py-number">1</span><span class="py-punctuation">,</span><span class="py-number">2</span><span class="py-punctuation">,</span><span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">4</span><span class="py-punctuation">,</span><span class="py-number">5</span><span class="py-punctuation">,</span><span class="py-number">6</span><span class="py-punctuation">,</span><span class="py-number">7</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-number">8</span><span class="py-punctuation">,</span><span class="py-number">9</span><span class="py-punctuation">,</span><span class="py-number">10</span><span class="py-punctuation">,</span><span class="py-number">11</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Array 2D original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">b</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Sub-array de las primeras 2 filas y columnas 1 y 2</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nSub-array b[:2, 1:3]:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">b</span><span class="py-punctuation">[</span><span class="py-punctuation">:</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">:</span><span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Toda la fila 1</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nToda la fila 1 (b[1, :]):"</span><span class="py-punctuation">,</span> <span class="py-variable">b</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-punctuation">:</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># o b[1]</span>
+
+<span class="py-comment"># Toda la columna 2</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nToda la columna 2 (b[:, 2]):"</span><span class="py-punctuation">,</span> <span class="py-variable">b</span><span class="py-punctuation">[</span><span class="py-punctuation">:</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block">Array 2D original:
+ [[ 0  1  2  3]
+ [ 4  5  6  7]
+ [ 8  9 10 11]]
+
+Sub-array b[:2, 1:3]:
+ [[1 2]
+ [5 6]]
+
+Toda la fila 1 (b[1, :]): [4 5 6 7]
+
+Toda la columna 2 (b[:, 2]): [ 2  6 10]</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Indexación con Booleanos -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">✅</span>
+                <h2 class="card-title">Indexación con <span class="numpy-concept">Booleanos</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una técnica muy poderosa es la indexación booleana. Puedes usar un array de booleanos (mismo tamaño que el array original) para seleccionar elementos donde el valor booleano correspondiente sea <code>True</code>.</p>
+                <p>A menudo, este array booleano se crea aplicando una condición al array original:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">datos</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Crear una condición booleana</span>
+<span class="py-variable">condicion</span> <span class="py-operator">=</span> <span class="py-variable">datos</span> <span class="py-operator">&gt;</span> <span class="py-number">3</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Condición (datos > 3):"</span><span class="py-punctuation">,</span> <span class="py-variable">condicion</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Usar la condición para indexar</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Elementos mayores que 3:"</span><span class="py-punctuation">,</span> <span class="py-variable">datos</span><span class="py-punctuation">[</span><span class="py-variable">condicion</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-comment"># O directamente:</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Elementos pares:"</span><span class="py-punctuation">,</span> <span class="py-variable">datos</span><span class="py-punctuation">[</span><span class="py-variable">datos</span> <span class="py-operator">%</span> <span class="py-number">2</span> <span class="py-operator">==</span> <span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Condición (datos &gt; 3): [False False False  True  True  True]
+Elementos mayores que 3: [4 5 6]
+Elementos pares: [2 4 6]</div>
+                <p>Esto es extremadamente útil para filtrar datos basados en criterios.</p>
+            </div>
+        </div>
+
+        <!-- Paso 5: Modificación de Elementos y Vistas vs Copias -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">✏️</span>
+                <h2 class="card-title">Modificación y <span class="numpy-concept">Vistas vs. Copias</span></h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Modificación de Elementos:</strong> Puedes modificar elementos de un array usando indexación o slicing en el lado izquierdo de una asignación.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">arr</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">arange</span><span class="py-punctuation">(</span><span class="py-number">5</span><span class="py-punctuation">)</span> <span class="py-comment"># [0 1 2 3 4]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original:"</span><span class="py-punctuation">,</span> <span class="py-variable">arr</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">arr</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">99</span> <span class="py-comment"># Modificar un elemento</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Modificado [0]:"</span><span class="py-punctuation">,</span> <span class="py-variable">arr</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">arr</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">:</span><span class="py-number">3</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">100</span> <span class="py-comment"># Modificar una rebanada (broadcast)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Modificado [1:3]:"</span><span class="py-punctuation">,</span> <span class="py-variable">arr</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">arr</span><span class="py-punctuation">[</span><span class="py-variable">arr</span> <span class="py-operator">&gt;</span> <span class="py-number">50</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-operator">-</span><span class="py-number">1</span> <span class="py-comment"># Modificar usando indexación booleana</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Modificado con booleano:"</span><span class="py-punctuation">,</span> <span class="py-variable">arr</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Original: [0 1 2 3 4]
+Modificado [0]: [99  1  2  3  4]
+Modificado [1:3]: [99 100 100   3   4]
+Modificado con booleano: [-1 -1 -1  3  4]</div>
+
+                <p><strong>Subarrays y Vistas vs. Copias:</strong></p>
+                <p>¡Este es un punto <span class="highlight">muy importante</span> en NumPy!</p>
+                <ul>
+                    <li>Cuando haces un <strong>slicing</strong> básico de un array (ej. <code>sub_array = arr[1:4]</code>), el <code>sub_array</code> resultante es una <span class="highlight">vista (view)</span> del array original, no una copia. Esto significa que ambos comparten los mismos datos en memoria.</li>
+                    <li>Si modificas la vista, ¡el array original también cambiará!</li>
+                    <li>Si necesitas una copia independiente, debes usar el método <code>.copy()</code>.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">original</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">40</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">vista</span> <span class="py-operator">=</span> <span class="py-variable">original</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">:</span><span class="py-number">3</span><span class="py-punctuation">]</span> <span class="py-comment"># vista es [20, 30]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original antes:"</span><span class="py-punctuation">,</span> <span class="py-variable">original</span><span class="py-punctuation">,</span> <span class="py-string">"Vista:"</span><span class="py-punctuation">,</span> <span class="py-variable">vista</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">vista</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">999</span> <span class="py-comment"># Modificamos la vista</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original después:"</span><span class="py-punctuation">,</span> <span class="py-variable">original</span><span class="py-punctuation">,</span> <span class="py-string">"Vista:"</span><span class="py-punctuation">,</span> <span class="py-variable">vista</span><span class="py-punctuation">)</span> <span class="py-comment"># ¡El original también cambió!</span>
+
+<span class="py-variable">copia</span> <span class="py-operator">=</span> <span class="py-variable">original</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">:</span><span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">copy</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-variable">copia</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">777</span> <span class="py-comment"># Modificamos la copia</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original con copia:"</span><span class="py-punctuation">,</span> <span class="py-variable">original</span><span class="py-punctuation">,</span> <span class="py-string">"Copia:"</span><span class="py-punctuation">,</span> <span class="py-variable">copia</span><span class="py-punctuation">)</span> <span class="py-comment"># El original no cambió</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block">Original antes: [10 20 30 40] Vista: [20 30]
+Original después: [ 10 999  30  40] Vista: [999  30]
+Original con copia: [ 10 999  30  40] Copia: [777  30]</div>
+                 <div class="warning-box">
+                    Este comportamiento de las vistas es para eficiencia, pero puede ser una fuente de errores si no eres consciente de ello. ¡Siempre tenlo presente! La indexación avanzada (como con listas de índices o arrays booleanos) generalmente devuelve copias.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 6: Resumen Final -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Indexación y Slicing</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Dominar el acceso a datos es clave en NumPy!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">👆</span>
+                        <strong>Indexación 1D</strong><br>
+                        <code>arr[i]</code>, <code>arr[-1]</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔢</span>
+                        <strong>Indexación 2D</strong><br>
+                        <code>arr[fila, col]</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔪</span>
+                        <strong>Slicing 1D</strong><br>
+                        <code>arr[inicio:fin:paso]</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">▦</span>
+                        <strong>Slicing 2D</strong><br>
+                        <code>arr[f_i:f_f, c_i:c_f]</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">✅</span>
+                        <strong>Index. Booleana</strong><br>
+                        <code>arr[arr > val]</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">✏️</span>
+                        <strong>Modificación</strong><br>
+                        <code>arr[idx] = nuevo_val</code><br>
+                        <code>arr[slice] = nuevo_val</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">👀</span>
+                        <strong>Vistas</strong><br>
+                        Slicing básico crea vistas (comparten datos).
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📄</span>
+                        <strong>Copias</strong><br>
+                        Usa <code>.copy()</code> para datos independientes.
+                    </div>
+                </div>
+                <p>Con estas herramientas, puedes seleccionar, filtrar y modificar tus arrays de NumPy con precisión.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 7 lógicamente) -->
+        <div class="card" data-step="7">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Indexación Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Has aprendido las técnicas esenciales para acceder y seleccionar datos en arrays de NumPy.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El próximo módulo se centrará en las <strong>Operaciones Matemáticas con Arrays</strong>. Verás lo fácil y eficiente que es realizar cálculos sobre arrays completos gracias a las capacidades vectorizadas de NumPy.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 6; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con NumPy ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>
