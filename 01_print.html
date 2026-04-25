@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial: Función print() en Python</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🐍';
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { /* Style for code in header */
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; /* Adjusted min-height */
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Reduced margin */
+            padding-bottom: 10px; /* Reduced padding */
+            border-bottom: 2px solid #f1f3f4; /* Thinner border */
+        }
+
+        .card-icon {
+            font-size: 2.2rem; /* Slightly smaller icon */
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; /* Slightly smaller title */
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .card-content {
+            font-size: 1.05rem; /* Adjusted font size */
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        .card-content li {
+            margin-bottom: 8px;
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        /* Code Block Styles - Adapted from 01_Print.html and demo.html */
+        .code-block {
+            background-color: #1e1e1e; /* Dark background from 01_Print.html */
+            color: #d4d4d4;             /* Light text from 01_Print.html */
+            padding: 18px; /* Adjusted padding */
+            border-radius: 10px; /* Softer radius */
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; /* Accent from demo.html */
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: -12px; /* Adjusted position */
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        /* Inline code (outside pre) */
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; /* Lighter, subtle background */
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; /* Indigo color */
+        }
+
+        /* Reset for code inside pre */
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python (from 01_Print.html) */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #DCDCAA; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; } /* For \n, \t, \" */
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; /* Softer border */
+            border-left: 4px solid #28a745; /* Accent color */
+            border-radius: 10px; /* Softer radius */
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida';
+            position: absolute;
+            top: -12px; /* Adjusted position */
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { /* Combined error-box */
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); /* Softer yellow gradient */
+            border-left: 5px solid #ffc107; /* Amber color */
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; /* Darker text for readability */
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { /* Specific for errors if needed, e.g. wrong code */
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); /* Softer cyan gradient */
+            border-left: 5px solid #17a2b8; /* Cyan color */
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; /* Darker text for readability */
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjusted minmax */
+            gap: 15px; /* Reduced gap */
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; /* Lighter background for items */
+            color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; /* Highlight color for strong tag */
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; /* Slightly smaller icon */
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; /* Icon color */
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; /* Adjusted padding */
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; /* Slightly smaller icon */
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; /* Consistent color */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { /* Renamed from .author for clarity */
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); /* Lighter gradient */
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; /* Adjusted position */
+            left: 15px; /* Moved to left */
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; /* Adjusted padding */
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; /* Allow cards to shrink more */
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; /* Reduced gap */
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; /* Adjusted padding */
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { /* From demo.html, for inline highlights */
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">10</span>
+            </div>
+            <h1>Tutorial: <code>print()</code> en Python</h1>
+            <p>Aprende a usar la función más importante de Python paso a paso</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Introducción -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🚀</span>
+                <h2 class="card-title">¡Bienvenida y tu Primera Línea de Código!</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Hola! Estás a punto de aprender una de las herramientas más fundamentales en programación: la función <code>print()</code>.</p>
+                <p>Imagina que quieres que tu computadora "diga" algo en la pantalla. En Python, un lenguaje de programación muy popular y amigable, usamos <code>print()</code> para esto.</p>
+                <p><strong>¿Qué es <code>print()</code>?</strong> Es una instrucción que le dice a Python: "<span class="highlight">muestra esto en la pantalla</span>".</p>
+                <div class="tip-box">
+                    No te preocupes si "función" o "instrucción" suenan complicados. Por ahora, piensa en <code>print()</code> como un comando mágico que hace aparecer texto.
+                </div>
+                <p>En este tutorial aprenderás:</p>
+                <ul>
+                    <li>✅ Cómo usar <code>print()</code> básico para texto y números.</li>
+                    <li>✅ Imprimir múltiples cosas y variables.</li>
+                    <li>✅ Personalizar la salida con <code>sep</code> y <code>end</code>.</li>
+                    <li>✅ Usar f-strings para formato moderno.</li>
+                    <li>✅ Evitar errores comunes.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Paso 2: Imprimir Texto (Cadenas) -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">💬</span>
+                <h2 class="card-title">Imprimir Texto (Cadenas)</h2>
+            </div>
+            <div class="card-content">
+                <p>La forma más común de usar <code>print()</code> es para mostrar un mensaje de texto. En programación, al texto lo llamamos "<span class="highlight">cadena de caracteres</span>" o "string".</p>
+                <p>Para decirle a Python que algo es texto, debemos encerrarlo entre <span class="highlight">comillas dobles</span> (<code>" "</code>) o <span class="highlight">comillas simples / apóstrofes</span> (<code>' '</code>).</p>
+                
+                <p><strong>Ejemplo con comillas dobles:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡Hola, Mundo!"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">¡Hola, Mundo!</div>
+                
+                <p><strong>Ejemplo con comillas simples:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">'Python es divertido'</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Python es divertido</div>
+
+                <div class="warning-box">
+                    <strong>¡Cuidado!</strong> Si empiezas con comillas dobles, debes terminar con comillas dobles. Lo mismo con las simples. Mezclarlas (ej. <code>print("texto')</code>) causará un error.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Imprimir Números -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🔢</span>
+                <h2 class="card-title">Imprimir Números</h2>
+            </div>
+            <div class="card-content">
+                <p>Con <code>print()</code> también puedes mostrar números. ¡No necesitas comillas para los números!</p>
+                
+                <p><strong>Ejemplo con un número entero:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-number">42</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">42</div>
+
+                <p><strong>Ejemplo con un número decimal (flotante):</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-number">3.14159</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">3.14159</div>
+                
+                <div class="tip-box">
+                    <strong>Diferencia importante:</strong><br>
+                    • <code>print("42")</code> imprime el <span class="highlight">texto</span> "42".<br>
+                    • <code>print(42)</code> imprime el <span class="highlight">número</span> 42.<br>
+                    ¡El resultado se ve igual en la pantalla, pero internamente Python los trata de forma diferente! Esto es crucial para operaciones matemáticas.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 4: Imprimir Múltiples Cosas y Variables -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">➕📦</span>
+                <h2 class="card-title">Múltiples Elementos y Variables</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes imprimir varias cosas a la vez separándolas con comas (<code>,</code>) dentro de <code>print()</code>. Python automáticamente pondrá un espacio entre ellas.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Mi nombre es"</span><span class="py-punctuation">,</span> <span class="py-string">"Juan"</span><span class="py-punctuation">,</span> <span class="py-string">"y tengo"</span><span class="py-punctuation">,</span> <span class="py-number">25</span><span class="py-punctuation">,</span> <span class="py-string">"años"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Mi nombre es Juan y tengo 25 años</div>
+
+                <p>Las <span class="highlight">variables</span> son como cajitas donde guardas información. Puedes imprimir su contenido:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">nombre</span> <span class="py-operator">=</span> <span class="py-string">"María"</span>
+<span class="py-variable">edad</span> <span class="py-operator">=</span> <span class="py-number">30</span>
+<span class="py-variable">ciudad</span> <span class="py-operator">=</span> <span class="py-string">"Guadalajara"</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hola, soy"</span><span class="py-punctuation">,</span> <span class="py-variable">nombre</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Vivo en"</span><span class="py-punctuation">,</span> <span class="py-variable">ciudad</span><span class="py-punctuation">,</span> <span class="py-string">"y tengo"</span><span class="py-punctuation">,</span> <span class="py-variable">edad</span><span class="py-punctuation">,</span> <span class="py-string">"años."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Hola, soy María
+Vivo en Guadalajara y tengo 30 años.</div>
+                <div class="tip-box">
+                    Al imprimir variables, no uses comillas alrededor de sus nombres. <code>print(nombre)</code> está bien, pero <code>print("nombre")</code> imprimiría la palabra "nombre".
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Caracteres Especiales y Comillas Internas -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">✨</span>
+                <h2 class="card-title">Caracteres Especiales y Comillas</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes agregar saltos de línea, tabulaciones y otros efectos usando "caracteres de escape" (que comienzan con una barra invertida <code>\</code>):</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Primera línea</span><span class="py-escape-char">\n</span><span class="py-string">Segunda línea"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Texto con</span><span class="py-escape-char">\t</span><span class="py-string">tabulación"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Primera línea
+Segunda línea
+Texto con    tabulación</div>
+
+                <p><strong>¿Cómo imprimir comillas dentro de un texto?</strong></p>
+                <ol>
+                    <li><strong>Alternar comillas:</strong> Si tu texto usa comillas dobles, defínelo con simples (o viceversa).</li>
+                    <li><strong>Escapar la comilla:</strong> Usa <code>\"</code> para una comilla doble o <code>\'</code> para una simple.</li>
+                </ol>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Opción 1: Alternar</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">'Ella dijo: "¡Hola Python!"'</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Opción 2: Escapar</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Él respondió: <span class="py-escape-char">\"</span>Python es genial<span class="py-escape-char">\"</span>."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Ella dijo: "¡Hola Python!"
+Él respondió: "Python es genial".</div>
+                <p>Principales caracteres de escape:</p>
+                <ul>
+                    <li><code>\n</code> : Salto de línea.</li>
+                    <li><code>\t</code> : Tabulación horizontal.</li>
+                    <li><code>\\</code> : Barra invertida.</li>
+                    <li><code>\'</code> : Comilla simple.</li>
+                    <li><code>\"</code> : Comilla doble.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Paso 6: Personalizando print() - Parámetro sep -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">⚙️</span>
+                <h2 class="card-title">Personalizando <code>print()</code>: Parámetro <code>sep</code></h2>
+            </div>
+            <div class="card-content">
+                <p>Cuando imprimes múltiples elementos, Python usa un espacio como separador por defecto. ¡Puedes cambiar esto con el parámetro <code>sep</code> (de "separator")!</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"manzanas"</span><span class="py-punctuation">,</span> <span class="py-string">"naranjas"</span><span class="py-punctuation">,</span> <span class="py-string">"plátanos"</span><span class="py-punctuation">)</span> <span class="py-comment"># Separador por defecto: espacio</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"manzanas"</span><span class="py-punctuation">,</span> <span class="py-string">"naranjas"</span><span class="py-punctuation">,</span> <span class="py-string">"plátanos"</span><span class="py-punctuation">,</span> <span class="py-parameter">sep</span><span class="py-operator">=</span><span class="py-string">", "</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Día"</span><span class="py-punctuation">,</span> <span class="py-string">"Mes"</span><span class="py-punctuation">,</span> <span class="py-string">"Año"</span><span class="py-punctuation">,</span> <span class="py-parameter">sep</span><span class="py-operator">=</span><span class="py-string">"-"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-parameter">sep</span><span class="py-operator">=</span><span class="py-string">""</span><span class="py-punctuation">)</span> <span class="py-comment"># Sin separador</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">manzanas naranjas plátanos
+manzanas, naranjas, plátanos
+Día-Mes-Año
+123</div>
+                <div class="tip-box">
+                    El parámetro <code>sep</code> debe ir después de todos los elementos que quieres imprimir, y el valor que le asignes (lo que va después del <code>=</code>) debe ser texto (entre comillas).
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 7: Personalizando print() - Parámetro end -->
+        <div class="card" data-step="7">
+            <div class="card-header">
+                <span class="card-icon">🔚</span>
+                <h2 class="card-title">Personalizando <code>print()</code>: Parámetro <code>end</code></h2>
+            </div>
+            <div class="card-content">
+                <p>Por defecto, <code>print()</code> siempre termina con un salto de línea. Puedes cambiar esto con el parámetro <code>end</code>.</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hola"</span><span class="py-punctuation">,</span> <span class="py-parameter">end</span><span class="py-operator">=</span><span class="py-string">" "</span><span class="py-punctuation">)</span> <span class="py-comment"># Termina con un espacio</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Mundo"</span><span class="py-punctuation">)</span>      <span class="py-comment"># Este print continúa en la misma línea y luego salta</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Contando: "</span><span class="py-punctuation">,</span> <span class="py-parameter">end</span><span class="py-operator">=</span><span class="py-string">""</span><span class="py-punctuation">)</span> <span class="py-comment"># No agrega nada al final</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-parameter">end</span><span class="py-operator">=</span><span class="py-string">", "</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-parameter">end</span><span class="py-operator">=</span><span class="py-string">", "</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-parameter">end</span><span class="py-operator">=</span><span class="py-string">"!"</span><span class="py-escape-char">\n</span><span class="py-string">"</span><span class="py-punctuation">)</span> <span class="py-comment"># Termina con "!" y un salto de línea explícito</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Siguiente línea."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Hola Mundo
+Contando: 1, 2, 3!
+Siguiente línea.</div>
+                <div class="warning-box">
+                    <strong>¡Experimenta!</strong> Prueba con diferentes valores para <code>end</code>, como <code>end="***"</code> o <code>end=" --> "</code>. Si quieres que la siguiente impresión comience en una nueva línea después de usar <code>end</code> con algo que no sea un salto de línea, puedes añadir <code>\n</code> a tu <code>end</code>, como en <code>end="!!!\n"</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 8: F-strings -->
+        <div class="card" data-step="8">
+            <div class="card-header">
+                <span class="card-icon">🎯</span>
+                <h2 class="card-title">F-strings: La Forma Moderna y Fácil</h2>
+            </div>
+            <div class="card-content">
+                <p>Las <span class="highlight">f-strings</span> (cadenas formateadas) son una forma súper elegante y moderna de combinar texto con el valor de variables o expresiones. ¡Solo pon una <code>f</code> justo antes de las comillas de apertura!</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">nombre</span> <span class="py-operator">=</span> <span class="py-string">"Carlos"</span>
+<span class="py-variable">edad</span> <span class="py-operator">=</span> <span class="py-number">22</span>
+<span class="py-variable">promedio</span> <span class="py-operator">=</span> <span class="py-number">8.5</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Hola </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">nombre</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">, tienes </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">edad</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> años."</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Tu promedio es </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">promedio</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">."</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"El año que viene tendrás </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">edad</span> <span class="py-operator">+</span> <span class="py-number">1</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> años."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Hola Carlos, tienes 22 años.
+Tu promedio es 8.5.
+El año que viene tendrás 23 años.</div>
+                
+                <div class="tip-box">
+                    <strong>¿Por qué son geniales las f-strings?</strong><br>
+                    • Son más fáciles de leer que otras formas de formateo.<br>
+                    • Puedes poner expresiones y operaciones matemáticas directamente dentro de las llaves <code>{ }</code>.<br>
+                    • Es la forma preferida y más moderna en Python para estas tareas.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 9: Errores comunes -->
+        <div class="card" data-step="9">
+            <div class="card-header">
+                <span class="card-icon">🚫</span>
+                <h2 class="card-title">Errores Comunes y Cómo Evitarlos</h2>
+            </div>
+            <div class="card-content">
+                <p>Todos cometemos errores al empezar. Aquí están los más comunes con <code>print()</code>:</p>
+                
+                <div class="error-box">
+                    <strong>Error 1: Olvidar los paréntesis</strong><br>
+                    Incorrecto: <code>print "Hola"</code> (Esto era válido en Python 2, ¡pero no en Python 3!)<br>
+                    Correcto: <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hola"</span><span class="py-punctuation">)</span></code>
+                </div>
+                
+                <div class="error-box">
+                    <strong>Error 2: Mezclar tipos de comillas</strong><br>
+                    Incorrecto: <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hola'</span><span class="py-punctuation">)</span></code><br>
+                    Correcto: <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hola"</span><span class="py-punctuation">)</span></code> o <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">'Hola'</span><span class="py-punctuation">)</span></code>
+                </div>
+                
+                <div class="error-box">
+                    <strong>Error 3: Olvidar comillas para el texto</strong><br>
+                    Incorrecto: <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span>Hola mundo<span class="py-punctuation">)</span></code> (Python pensará que <code>Hola</code> y <code>mundo</code> son variables)<br>
+                    Correcto: <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hola mundo"</span><span class="py-punctuation">)</span></code>
+                </div>
+
+                <div class="error-box">
+                    <strong>Error 4: Imprimir una variable no definida</strong><br>
+                    Si escribes <code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">mi_dato</span><span class="py-punctuation">)</span></code> pero <code>mi_dato</code> no existe, Python dará un error <code>NameError</code>.
+                </div>
+                
+                <div class="tip-box">
+                    <strong>Consejo profesional:</strong> Lee los mensajes de error. Python usualmente te da pistas sobre qué salió mal. Si algo no funciona, revisa siempre las comillas, paréntesis y la ortografía de tus variables.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 10: Resumen -->
+        <div class="card" data-step="10">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">¡Resumen de lo Aprendido!</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Felicidades! Has completado el tutorial de la función <code>print()</code>. Aquí tienes un resumen de los puntos clave:</p>
+                
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">📝</span>
+                        <strong>Básico</strong><br>
+                        <code>print("texto")</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔢</span>
+                        <strong>Números</strong><br>
+                        <code>print(123)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">➕</span>
+                        <strong>Múltiples</strong><br>
+                        <code>print("a", "b", 1)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📦</span>
+                        <strong>Variables</strong><br>
+                        <code>x = 5; print(x)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">✨</span>
+                        <strong>Especiales</strong><br>
+                        <code>\n</code>, <code>\t</code>, <code>\"</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Separador <code>sep</code></strong><br>
+                        <code>print(a,b,sep="-")</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔚</span>
+                        <strong>Final <code>end</code></strong><br>
+                        <code>print(a,end=".")</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🎯</span>
+                        <strong>F-strings</strong><br>
+                        <code>print(f"{variable}")</code>
+                    </div>
+                </div>
+                
+                <div class="tip-box">
+                    <strong>¡Sigue practicando!</strong> La función <code>print()</code> será tu mejor amiga mientras aprendes Python. Úsala para experimentar, depurar (encontrar errores) y ver qué hace tu código en cada paso.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 11 lógicamente) -->
+        <div class="card" data-step="11">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Felicidades!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Has completado exitosamente el tutorial de la función <code>print()</code> en Python.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¡Estás listo para el siguiente paso!</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora que dominas <code>print()</code>, puedes explorar variables más a fondo, operaciones matemáticas, estructuras de control como <code>if</code>/<code>else</code>, ¡y mucho más en el fascinante mundo de Python!</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        // totalContentSteps es el número de tarjetas de contenido, antes de la de agradecimiento.
+        const totalContentSteps = 10; 
+        const totalLogicalSteps = totalContentSteps + 1; // Incluye la pantalla de agradecimiento.
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); // Muestra el total de pasos de contenido
+
+            // Actualizar contador de pasos (mostrando el paso actual sobre el total de contenido)
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); // No mostrar paso 11/10
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            // Actualizar barra de progreso (basado en pasos de contenido)
+            // La barra se llena al llegar al último paso de contenido.
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            // Mostrar/ocultar tarjetas
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            // Actualizar botones
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { // Último paso de contenido
+                nextBtn.textContent = 'Finalizar Tutorial 🎯';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { // Pantalla de agradecimiento
+                nextBtn.style.display = 'none'; // Ocultar botón "Siguiente"
+                prevBtn.textContent = '⬅ Volver al Resumen'; // Opción para volver al resumen
+                prevBtn.disabled = false; 
+            } else { // Pasos intermedios
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            // Permitir navegación entre 1 y el número total de pasos lógicos (incluyendo agradecimiento)
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                // Scroll suave al inicio del contenedor de la tarjeta
+                const containerTop = document.querySelector('.container').offsetTop -20; // un pequeño offset
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        // Navegación con teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        // Inicializar UI
+        updateUI();
+        
+    </script>
+</body>
+</html>

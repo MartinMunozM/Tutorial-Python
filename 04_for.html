@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial: Bucles `for` en Python</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🔄'; /* Icono para bucles for */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } /* for, in, if, else, elif, while, break, continue, pass, def, return, etc. */
+        .code-block .py-builtin { color: #4EC9B0; } /* print, range, input, len, str, int, float, list, etc. */
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } /* ==, !=, >, <, >=, <=, +, =, %, etc. */
+        .code-block .py-punctuation { color: #D4D4D4; } /* :, (), [] */
+        .code-block .py-boolean-none { color: #569CD6; } /* True, False */
+        .code-block .py-decorator { color: #DCDCAA; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">9</span>
+            </div>
+            <h1>Tutorial: Repitiendo Tareas con Bucles <code>for</code></h1>
+            <p>Aprende a iterar sobre secuencias y automatizar procesos en Python</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Introducción a los Bucles `for` -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🔁</span>
+                <h2 class="card-title">¿Qué es un Bucle <code>for</code>?</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Hola de nuevo! A veces, necesitamos repetir una acción varias veces. Imagina que quieres saludar a 10 personas diferentes o procesar cada elemento de una lista de compras.</p>
+                <p>Escribir el mismo código una y otra vez sería tedioso y propenso a errores. Para esto, usamos <strong>bucles</strong>. El bucle <code>for</code> en Python es una herramienta poderosa para iterar (recorrer) sobre <span class="highlight">secuencias</span> de elementos.</p>
+                <div class="tip-box">
+                    El bucle <code>for</code> de Python es más parecido a una estructura <strong>"for-each"</strong>. En lugar de manejar contadores manualmente, Python toma directamente cada elemento de una secuencia.
+                </div>
+                <p>La sintaxis básica es:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">for</span> <span class="py-variable">variable_temporal</span> <span class="py-keyword">in</span> <span class="py-variable">secuencia</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código a ejecutar para cada elemento</span>
+    <span class="py-comment"># ¡Este código DEBE estar indentado!</span></code></pre></div>
+                <p>Donde <code>variable_temporal</code> tomará el valor de cada elemento de la <code>secuencia</code> en cada repetición (iteración) del bucle.</p>
+            </div>
+        </div>
+
+        <!-- Paso 2: Iterando sobre Listas -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h2 class="card-title">Iterando sobre Listas</h2>
+            </div>
+            <div class="card-content">
+                <p>Una de las secuencias más comunes sobre las que iteramos son las <strong>listas</strong>.</p>
+                <p><strong>Ejemplo: Saludar a amigos en una lista.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">amigos</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"Ana"</span><span class="py-punctuation">,</span> <span class="py-string">"Luis"</span><span class="py-punctuation">,</span> <span class="py-string">"Sofía"</span><span class="py-punctuation">]</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">nombre</span> <span class="py-keyword">in</span> <span class="py-variable">amigos</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"¡Hola, </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">nombre</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">!"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">¡Hola, Ana!
+¡Hola, Luis!
+¡Hola, Sofía!</div>
+                <p><strong>Ejemplo: Sumar números en una lista.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">numeros</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span>
+<span class="py-variable">suma_total</span> <span class="py-operator">=</span> <span class="py-number">0</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">numero</span> <span class="py-keyword">in</span> <span class="py-variable">numeros</span><span class="py-punctuation">:</span>
+    <span class="py-variable">suma_total</span> <span class="py-operator">+=</span> <span class="py-variable">numero</span>  <span class="py-comment"># Forma corta de: suma_total = suma_total + numero</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"La suma total es: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">suma_total</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">La suma total es: 65</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: La Función `range()` -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🔢</span>
+                <h2 class="card-title">La Función <code>range()</code></h2>
+            </div>
+            <div class="card-content">
+                <p>¿Qué pasa si quieres repetir una acción un número específico de veces, sin tener una lista predefinida? La función <code>range()</code> es perfecta para esto, ya que genera una secuencia de números.</p>
+                <ul>
+                    <li><code>range(stop)</code>: Genera números desde 0 hasta <code>stop-1</code>.
+                        <div class="code-block"><pre><code class="language-python"><span class="py-keyword">for</span> <span class="py-variable">i</span> <span class="py-keyword">in</span> <span class="py-builtin">range</span><span class="py-punctuation">(</span><span class="py-number">5</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>  <span class="py-comment"># i tomará valores 0, 1, 2, 3, 4</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Iteración número: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">i</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                         <p>Salida: <div class="output-block">Iteración número: 0<br>Iteración número: 1<br>Iteración número: 2<br>Iteración número: 3<br>Iteración número: 4</div></p>
+                    </li>
+                    <li><code>range(start, stop)</code>: Genera números desde <code>start</code> hasta <code>stop-1</code>.
+                        <div class="code-block"><pre><code class="language-python"><span class="py-keyword">for</span> <span class="py-variable">num</span> <span class="py-keyword">in</span> <span class="py-builtin">range</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span> <span class="py-comment"># num tomará valores 2, 3, 4, 5</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">num</span><span class="py-punctuation">)</span></code></pre></div>
+                         <p>Salida: <div class="output-block">2<br>3<br>4<br>5</div></p>
+                    </li>
+                    <li><code>range(start, stop, step)</code>: Genera números desde <code>start</code> hasta <code>stop-1</code>, incrementando en <code>step</code>.
+                        <div class="code-block"><pre><code class="language-python"><span class="py-keyword">for</span> <span class="py-variable">x</span> <span class="py-keyword">in</span> <span class="py-builtin">range</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span> <span class="py-comment"># x tomará valores 1, 3, 5, 7, 9</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span></code></pre></div>
+                        <p>Salida: <div class="output-block">1<br>3<br>5<br>7<br>9</div></p>
+                    </li>
+                </ul>
+                 <div class="warning-box">
+                    Recuerda que <code>range(stop)</code> y <code>range(start, stop)</code> llegan hasta <code>stop-1</code>.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Iterando sobre Cadenas de Texto (Strings) -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🔡</span>
+                <h2 class="card-title">Iterando sobre Cadenas de Texto</h2>
+            </div>
+            <div class="card-content">
+                <p>Las cadenas de texto también son secuencias (de caracteres), ¡así que puedes iterar sobre ellas con un bucle <code>for</code>!</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">palabra</span> <span class="py-operator">=</span> <span class="py-string">"Python"</span>
+<span class="py-keyword">for</span> <span class="py-variable">letra</span> <span class="py-keyword">in</span> <span class="py-variable">palabra</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">letra</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">P
+y
+t
+h
+o
+n</div>
+                <div class="tip-box">
+                    Esto es útil para procesar cada carácter de un texto, por ejemplo, para contar vocales o convertir a mayúsculas.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 5: `break` - Saliendo Temprano del Bucle -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🛑</span>
+                <h2 class="card-title"><code>break</code>: Saliendo Temprano del Bucle</h2>
+            </div>
+            <div class="card-content">
+                <p>A veces, mientras iteras, encuentras lo que buscas o se cumple una condición que hace innecesario continuar. La palabra clave <code>break</code> te permite salir del bucle <code>for</code> inmediatamente.</p>
+                <p><strong>Ejemplo: Buscar un número y detenerse al encontrarlo.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">numeros</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">12</span><span class="py-punctuation">,</span> <span class="py-number">7</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span>
+<span class="py-variable">numero_buscado</span> <span class="py-operator">=</span> <span class="py-number">12</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">num</span> <span class="py-keyword">in</span> <span class="py-variable">numeros</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Probando con: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">num</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+    <span class="py-keyword">if</span> <span class="py-variable">num</span> <span class="py-operator">==</span> <span class="py-variable">numero_buscado</span><span class="py-punctuation">:</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡Número encontrado!"</span><span class="py-punctuation">)</span>
+        <span class="py-keyword">break</span>  <span class="py-comment"># Salimos del bucle</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Búsqueda terminada."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Probando con: 1
+Probando con: 5
+Probando con: 8
+Probando con: 12
+¡Número encontrado!
+Búsqueda terminada.</div>
+                <p>El bucle se detendrá después de encontrar el 12.</p>
+            </div>
+        </div>
+
+        <!-- Paso 6: `continue` - Saltando a la Siguiente Iteración -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">⏭️</span>
+                <h2 class="card-title"><code>continue</code>: Saltando a la Siguiente Iteración</h2>
+            </div>
+            <div class="card-content">
+                <p>La palabra clave <code>continue</code> salta el resto del código <em>dentro de la iteración actual</em> y pasa directamente a la siguiente iteración del bucle.</p>
+                <p><strong>Ejemplo: Imprimir solo números impares.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">numeros</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">,</span> <span class="py-number">7</span><span class="py-punctuation">]</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">num</span> <span class="py-keyword">in</span> <span class="py-variable">numeros</span><span class="py-punctuation">:</span>
+    <span class="py-keyword">if</span> <span class="py-variable">num</span> <span class="py-operator">%</span> <span class="py-number">2</span> <span class="py-operator">==</span> <span class="py-number">0</span><span class="py-punctuation">:</span>  <span class="py-comment"># Si el número es par</span>
+        <span class="py-keyword">continue</span>     <span class="py-comment"># Saltamos el print para este número par</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Número impar: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">num</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Número impar: 1
+Número impar: 3
+Número impar: 5
+Número impar: 7</div>
+            </div>
+        </div>
+        
+        <!-- Paso 7: La Cláusula `else` en Bucles `for` -->
+        <div class="card" data-step="7">
+            <div class="card-header">
+                <span class="card-icon">✔️</span>
+                <h2 class="card-title">La Cláusula <code>else</code> en Bucles <code>for</code></h2>
+            </div>
+            <div class="card-content">
+                <p>Python tiene una característica un poco inusual: los bucles <code>for</code> pueden tener una cláusula <code>else</code>.</p>
+                <p>El bloque <code>else</code> se ejecuta <strong>solo si el bucle termina normalmente</strong>, es decir, si recorre todos los elementos sin encontrar una sentencia <code>break</code>.</p>
+                <p><strong>Ejemplo: Usando <code>else</code> para saber si un <code>break</code> ocurrió.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">items</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"manzana"</span><span class="py-punctuation">,</span> <span class="py-string">"banana"</span><span class="py-punctuation">,</span> <span class="py-string">"naranja"</span><span class="py-punctuation">]</span>
+<span class="py-variable">item_a_buscar</span> <span class="py-operator">=</span> <span class="py-string">"pera"</span> <span class="py-comment"># Prueba también cambiando a "banana"</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">item</span> <span class="py-keyword">in</span> <span class="py-variable">items</span><span class="py-punctuation">:</span>
+    <span class="py-keyword">if</span> <span class="py-variable">item</span> <span class="py-operator">==</span> <span class="py-variable">item_a_buscar</span><span class="py-punctuation">:</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"¡Encontrado: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">item_a_buscar</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">!"</span><span class="py-punctuation">)</span>
+        <span class="py-keyword">break</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Este bloque se ejecuta solo si el bucle for terminó sin un break</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">item_a_buscar</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> no encontrado en la lista."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Si <code>item_a_buscar</code> es "pera", la salida será: <div class="output-block" style="display: inline-block; padding: 5px 10px; margin:0;">pera no encontrado en la lista.</div></p>
+                <p>Si <code>item_a_buscar</code> es "banana", la salida será: <div class="output-block" style="display: inline-block; padding: 5px 10px; margin:0;">¡Encontrado: banana!</div> (y el <code>else</code> no se ejecuta).</p>
+            </div>
+        </div>
+
+        <!-- Paso 8: Bucles `for` Anidados -->
+        <div class="card" data-step="8">
+            <div class="card-header">
+                <span class="card-icon">🪆</span> <!-- Icono de muñeca rusa para anidado -->
+                <h2 class="card-title">Bucles <code>for</code> Anidados</h2>
+            </div>
+            <div class="card-content">
+                <p>Al igual que con los condicionales <code>if</code>, puedes poner un bucle <code>for</code> dentro de otro. Esto se llama <strong>bucles anidados</strong>.</p>
+                <p>El bucle interno se ejecutará completamente por cada iteración del bucle externo.</p>
+                <p><strong>Ejemplo: Imprimir combinaciones de colores y tallas.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">colores</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"Rojo"</span><span class="py-punctuation">,</span> <span class="py-string">"Azul"</span><span class="py-punctuation">]</span>
+<span class="py-variable">tallas</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"S"</span><span class="py-punctuation">,</span> <span class="py-string">"M"</span><span class="py-punctuation">,</span> <span class="py-string">"L"</span><span class="py-punctuation">]</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">color</span> <span class="py-keyword">in</span> <span class="py-variable">colores</span><span class="py-punctuation">:</span>      <span class="py-comment"># Bucle externo</span>
+    <span class="py-keyword">for</span> <span class="py-variable">talla</span> <span class="py-keyword">in</span> <span class="py-variable">tallas</span><span class="py-punctuation">:</span>  <span class="py-comment"># Bucle interno</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Producto: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">color</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">, Talla: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">talla</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Producto: Rojo, Talla: S
+Producto: Rojo, Talla: M
+Producto: Rojo, Talla: L
+Producto: Azul, Talla: S
+Producto: Azul, Talla: M
+Producto: Azul, Talla: L</div>
+                <div class="warning-box">
+                    Los bucles anidados pueden volverse lentos si las secuencias son muy grandes. ¡Úsalos con cuidado!
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 9: Resumen Final -->
+        <div class="card" data-step="9">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen de Bucles <code>for</code></h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has recorrido un largo camino con los bucles <code>for</code>!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🔁</span>
+                        <strong>Básico</strong><br>
+                        <code>for var in seq:</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📋</span>
+                        <strong>Listas/Strings</strong><br>
+                        Itera sobre cada elemento/carácter.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔢</span>
+                        <strong><code>range()</code></strong><br>
+                        <code>range(stop)</code><br><code>range(start,stop)</code><br><code>range(start,stop,step)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🛑</span>
+                        <strong><code>break</code></strong><br>
+                        Sale del bucle inmediatamente.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⏭️</span>
+                        <strong><code>continue</code></strong><br>
+                        Salta a la siguiente iteración.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">✔️</span>
+                        <strong><code>else</code> en bucle</strong><br>
+                        Si el bucle termina sin <code>break</code>.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🪆</span>
+                        <strong>Anidados</strong><br>
+                        Bucles dentro de bucles.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚠️</span>
+                        <strong>Indentación</strong><br>
+                        ¡Obligatoria y crucial!
+                    </div>
+                </div>
+                <p>Los bucles <code>for</code> son esenciales para automatizar tareas repetitivas y procesar colecciones de datos. ¡Sigue practicando!</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 10 lógicamente) -->
+        <div class="card" data-step="10">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Tutorial Completado!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Excelente! Has completado el tutorial sobre los bucles <code>for</code> en Python.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ya sabes cómo repetir tareas sobre secuencias. El siguiente tipo de bucle, <code>while</code>, te permitirá repetir acciones mientras una condición sea verdadera. ¡También explorarás las funciones para organizar mejor tu código!</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 9; // Número de tarjetas de contenido para "for"
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Finalizar Tutorial 🎯';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

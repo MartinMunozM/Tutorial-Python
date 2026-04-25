@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial: Estructuras de Datos en Python</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🧱'; /* Icono para estructuras de datos (ladrillos/bloques) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .structure-name { /* Para resaltar el nombre de la estructura */
+             color: #764ba2; /* Morado del gradiente */
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        .card-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .card-content th, .card-content td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .card-content th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } /* {}, [], () */
+        .code-block .py-method { color: #DCDCAA;} /* Nombres de métodos como .append(), .keys() */
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #DCDCAA; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+            .card-content table, .card-content th, .card-content td { font-size: 0.9rem; padding: 6px;}
+
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">14</span>
+            </div>
+            <h1>Tutorial: Estructuras de Datos en Python</h1>
+            <p>Organiza y manipula colecciones de datos con Listas, Tuplas, Diccionarios y Sets</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Introducción a Estructuras de Datos -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🏗️</span>
+                <h2 class="card-title">¿Qué son las Estructuras de Datos?</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Bienvenido/a al mundo de la organización de datos! Hasta ahora, has trabajado principalmente con variables individuales que guardan un solo valor (un número, un texto, un booleano).</p>
+                <p>Pero, ¿qué pasa cuando necesitas agrupar varios datos relacionados? Aquí es donde entran las <strong>estructuras de datos</strong>. Son formas especializadas de organizar, almacenar y gestionar colecciones de datos para que puedan ser accedidos y modificados eficientemente.</p>
+                <p>Python ofrece varias estructuras de datos incorporadas. En este tutorial, nos enfocaremos en cuatro de las más importantes:</p>
+                <ul>
+                    <li><strong>Listas (Lists)</strong>: Colecciones ordenadas y modificables.</li>
+                    <li><strong>Tuplas (Tuples)</strong>: Colecciones ordenadas e inmutables (no modificables después de su creación).</li>
+                    <li><strong>Diccionarios (Dictionaries)</strong>: Colecciones desordenadas (en Python < 3.7, ordenadas por inserción en >= 3.7) de pares clave-valor.</li>
+                    <li><strong>Conjuntos (Sets)</strong>: Colecciones desordenadas de elementos únicos.</li>
+                </ul>
+                <div class="tip-box">
+                    Elegir la estructura de datos correcta puede hacer tu código más eficiente, legible y fácil de mantener.
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTAS: Introducción -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h2 class="card-title">Listas: <span class="structure-name">List</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Las <strong>listas</strong> son una de las estructuras de datos más versátiles y comúnmente usadas en Python.</p>
+                <p>Características principales de las listas:</p>
+                <ul>
+                    <li><strong>Ordenadas:</strong> Los elementos se almacenan en un orden específico y ese orden se mantiene.</li>
+                    <li><strong>Modificables (Mutables):</strong> Puedes cambiar, añadir o eliminar elementos después de crear la lista.</li>
+                    <li><strong>Permiten duplicados:</strong> Una lista puede contener el mismo valor múltiples veces.</li>
+                    <li><strong>Heterogéneas:</strong> Pueden contener elementos de diferentes tipos de datos (aunque es común que contengan elementos del mismo tipo).</li>
+                </ul>
+                <p>Se crean usando corchetes <code>[ ]</code> y separando los elementos con comas.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Lista vacía</span>
+<span class="py-variable">mi_lista_vacia</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-punctuation">]</span>
+
+<span class="py-comment"># Lista de números</span>
+<span class="py-variable">numeros</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span>
+
+<span class="py-comment"># Lista de strings</span>
+<span class="py-variable">frutas</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"manzana"</span><span class="py-punctuation">,</span> <span class="py-string">"banana"</span><span class="py-punctuation">,</span> <span class="py-string">"cereza"</span><span class="py-punctuation">]</span>
+
+<span class="py-comment"># Lista mixta</span>
+<span class="py-variable">mixta</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"hola"</span><span class="py-punctuation">,</span> <span class="py-number">3.14</span><span class="py-punctuation">,</span> <span class="py-boolean-none">True</span><span class="py-punctuation">,</span> <span class="py-number">42</span><span class="py-punctuation">]</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">frutas</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">['manzana', 'banana', 'cereza']</div>
+            </div>
+        </div>
+
+        <!-- LISTAS: Acceso y Modificación -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🔧</span>
+                <h2 class="card-title">Listas: Acceso y Modificación</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes acceder a los elementos de una lista usando su <strong>índice</strong> (posición). El primer elemento tiene índice <code>0</code>, el segundo <code>1</code>, y así sucesivamente.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">colores</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">"rojo"</span><span class="py-punctuation">,</span> <span class="py-string">"verde"</span><span class="py-punctuation">,</span> <span class="py-string">"azul"</span><span class="py-punctuation">,</span> <span class="py-string">"amarillo"</span><span class="py-punctuation">]</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">colores</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>  <span class="py-comment"># Accede al primer elemento</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">colores</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>  <span class="py-comment"># Accede al tercer elemento</span>
+
+<span class="py-comment"># También puedes usar índices negativos para contar desde el final</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">colores</span><span class="py-punctuation">[</span><span class="py-operator">-</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Accede al último elemento</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">rojo
+azul
+amarillo</div>
+                <p>Como las listas son modificables, puedes cambiar un elemento:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">colores</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-string">"morado"</span> <span class="py-comment"># Cambia "verde" por "morado"</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">colores</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">['rojo', 'morado', 'azul', 'amarillo']</div>
+                 <div class="warning-box">
+                    Si intentas acceder a un índice que no existe (ej. <code>colores[10]</code> en una lista de 4 elementos), obtendrás un error <code>IndexError</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTAS: Métodos Comunes -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🛠️</span>
+                <h2 class="card-title">Listas: Métodos Comunes</h2>
+            </div>
+            <div class="card-content">
+                <p>Las listas tienen muchos métodos útiles (funciones asociadas a ellas):</p>
+                <ul>
+                    <li><code><span class="py-method">append(elemento)</span></code>: Añade un elemento al final de la lista.</li>
+                    <li><code><span class="py-method">insert(indice, elemento)</span></code>: Inserta un elemento en una posición específica.</li>
+                    <li><code><span class="py-method">remove(elemento)</span></code>: Elimina la primera aparición del elemento especificado.</li>
+                    <li><code><span class="py-method">pop(indice_opcional)</span></code>: Elimina y devuelve el elemento en el índice dado (o el último si no se especifica índice).</li>
+                    <li><code><span class="py-method">sort()</span></code>: Ordena la lista (modifica la original).</li>
+                    <li><code><span class="py-builtin">len(lista)</span></code>: (Función, no método) Devuelve el número de elementos en la lista.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">numeros</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span>
+<span class="py-variable">numeros</span><span class="py-punctuation">.</span><span class="py-method">append</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">)</span>          <span class="py-comment"># numeros ahora es [3, 1, 4, 2]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Después de append: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">numeros</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">numeros</span><span class="py-punctuation">.</span><span class="py-method">insert</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">)</span>       <span class="py-comment"># numeros ahora es [3, 5, 1, 4, 2]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Después de insert: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">numeros</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">numeros</span><span class="py-punctuation">.</span><span class="py-method">sort</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>             <span class="py-comment"># numeros ahora es [1, 2, 3, 4, 5]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Después de sort: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">numeros</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Longitud de la lista: </span><span class="py-fstring-brace">{</span><span class="py-builtin">len</span><span class="py-punctuation">(</span><span class="py-variable">numeros</span><span class="py-punctuation">)</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block">Después de append: [3, 1, 4, 2]
+Después de insert: [3, 5, 1, 4, 2]
+Después de sort: [1, 2, 3, 4, 5]
+Longitud de la lista: 5</div>
+            </div>
+        </div>
+
+        <!-- TUPLAS: Introducción -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🔒</span>
+                <h2 class="card-title">Tuplas: <span class="structure-name">Tuple</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Las <strong>tuplas</strong> son similares a las listas, pero con una diferencia clave: ¡son <span class="highlight">inmutables</span>! Esto significa que una vez que creas una tupla, no puedes cambiar su contenido (ni añadir, ni eliminar, ni modificar elementos).</p>
+                <p>Características principales de las tuplas:</p>
+                <ul>
+                    <li><strong>Ordenadas:</strong> Los elementos se almacenan en un orden específico.</li>
+                    <li><strong>Inmutables:</strong> No se pueden modificar después de su creación.</li>
+                    <li><strong>Permiten duplicados.</strong></li>
+                    <li><strong>Heterogéneas.</strong></li>
+                </ul>
+                <p>Se crean usando paréntesis <code>( )</code> y separando los elementos con comas. Los paréntesis son opcionales en muchos casos si la coma está presente, pero es buena práctica usarlos para mayor claridad.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Tupla de coordenadas</span>
+<span class="py-variable">punto</span> <span class="py-operator">=</span> <span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Tupla de colores primarios (no se espera que cambien)</span>
+<span class="py-variable">rgb</span> <span class="py-operator">=</span> <span class="py-punctuation">(</span><span class="py-string">"rojo"</span><span class="py-punctuation">,</span> <span class="py-string">"verde"</span><span class="py-punctuation">,</span> <span class="py-string">"azul"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Tupla con un solo elemento (¡necesita una coma al final!)</span>
+<span class="py-variable">mi_tupla_unica</span> <span class="py-operator">=</span> <span class="py-punctuation">(</span><span class="py-string">"valor"</span><span class="py-punctuation">,</span><span class="py-punctuation">)</span> 
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">punto</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">rgb</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Se accede igual que a las listas</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">(10, 20)
+verde</div>
+                <div class="warning-box">
+                    Intentar modificar una tupla resultará en un error <code>TypeError</code>.
+                    <pre><code><span class="py-variable">rgb</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-string">"magenta"</span>  <span class="py-comment"># Esto daría error</span></code></pre>
+                </div>
+                 <div class="tip-box">
+                    <strong>¿Cuándo usar tuplas?</strong> Cuando tienes una colección de elementos que no debe cambiar, como coordenadas, constantes, o registros de datos fijos. También son ligeramente más eficientes que las listas en algunos contextos debido a su inmutabilidad.
+                </div>
+            </div>
+        </div>
+
+        <!-- DICCIONARIOS: Introducción -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🔑</span>
+                <h2 class="card-title">Diccionarios: <span class="structure-name">dict</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Los <strong>diccionarios</strong> son colecciones que almacenan datos en pares <strong>clave-valor</strong>. En lugar de acceder a los elementos por un índice numérico, se accede mediante una clave única.</p>
+                <p>Características principales de los diccionarios:</p>
+                <ul>
+                    <li><strong>Pares Clave-Valor:</strong> Cada elemento es una asociación de una clave con su valor.</li>
+                    <li><strong>Claves Únicas:</strong> Las claves dentro de un diccionario deben ser únicas.</li>
+                    <li><strong>Modificables (Mutables):</strong> Puedes añadir, eliminar o modificar pares clave-valor.</li>
+                    <li><strong>Ordenados (Python 3.7+):</strong> Desde Python 3.7, los diccionarios recuerdan el orden de inserción. En versiones anteriores, eran desordenados.</li>
+                    <li>Las claves suelen ser strings o números (deben ser de tipo inmutable). Los valores pueden ser de cualquier tipo.</li>
+                </ul>
+                <p>Se crean usando llaves <code>{ }</code> con pares <code>clave: valor</code> separados por comas.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Diccionario vacío</span>
+<span class="py-variable">diccionario_vacio</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-punctuation">}</span>
+
+<span class="py-comment"># Información de una persona</span>
+<span class="py-variable">persona</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span>
+    <span class="py-string">"nombre"</span><span class="py-punctuation">:</span> <span class="py-string">"Ana"</span><span class="py-punctuation">,</span>
+    <span class="py-string">"edad"</span><span class="py-punctuation">:</span> <span class="py-number">30</span><span class="py-punctuation">,</span>
+    <span class="py-string">"ciudad"</span><span class="py-punctuation">:</span> <span class="py-string">"México"</span><span class="py-punctuation">,</span>
+    <span class="py-string">"profesion"</span><span class="py-punctuation">:</span> <span class="py-string">"Ingeniera"</span>
+<span class="py-punctuation">}</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">persona</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada (el orden puede variar en Python < 3.7):</p>
+                <div class="output-block">{'nombre': 'Ana', 'edad': 30, 'ciudad': 'México', 'profesion': 'Ingeniera'}</div>
+            </div>
+        </div>
+        
+        <!-- DICCIONARIOS: Acceso y Modificación -->
+        <div class="card" data-step="7">
+            <div class="card-header">
+                <span class="card-icon">🔧</span>
+                <h2 class="card-title">Diccionarios: Acceso y Modificación</h2>
+            </div>
+            <div class="card-content">
+                <p>Se accede a los valores usando sus claves entre corchetes <code>[ ]</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">persona</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">"nombre"</span><span class="py-punctuation">:</span> <span class="py-string">"Carlos"</span><span class="py-punctuation">,</span> <span class="py-string">"edad"</span><span class="py-punctuation">:</span> <span class="py-number">25</span><span class="py-punctuation">}</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">persona</span><span class="py-punctuation">[</span><span class="py-string">"nombre"</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">persona</span><span class="py-punctuation">[</span><span class="py-string">"edad"</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Carlos
+25</div>
+                <p>Puedes añadir nuevos pares clave-valor o modificar existentes:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">persona</span><span class="py-punctuation">[</span><span class="py-string">"ciudad"</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-string">"Guadalajara"</span>  <span class="py-comment"># Añadir nueva clave-valor</span>
+<span class="py-variable">persona</span><span class="py-punctuation">[</span><span class="py-string">"edad"</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-number">26</span>              <span class="py-comment"># Modificar valor existente</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">persona</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">{'nombre': 'Carlos', 'edad': 26, 'ciudad': 'Guadalajara'}</div>
+                <div class="warning-box">
+                    Si intentas acceder a una clave que no existe usando <code>diccionario[clave_inexistente]</code>, obtendrás un error <code>KeyError</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- DICCIONARIOS: Métodos Comunes -->
+        <div class="card" data-step="8">
+            <div class="card-header">
+                <span class="card-icon">🛠️</span>
+                <h2 class="card-title">Diccionarios: Métodos Comunes</h2>
+            </div>
+            <div class="card-content">
+                <p>Algunos métodos útiles para diccionarios:</p>
+                <ul>
+                    <li><code><span class="py-method">get(clave, valor_por_defecto_opcional)</span></code>: Devuelve el valor de la clave. Si la clave no existe, devuelve <code>None</code> o el valor por defecto si se proporciona (evita <code>KeyError</code>).</li>
+                    <li><code><span class="py-method">keys()</span></code>: Devuelve una vista de todas las claves.</li>
+                    <li><code><span class="py-method">values()</span></code>: Devuelve una vista de todos los valores.</li>
+                    <li><code><span class="py-method">items()</span></code>: Devuelve una vista de todos los pares (clave, valor).</li>
+                    <li><code><span class="py-method">pop(clave, valor_por_defecto_opcional)</span></code>: Elimina la clave y devuelve su valor.</li>
+                </ul>
+                 <div class="code-block"><pre><code class="language-python"><span class="py-variable">producto</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">"id"</span><span class="py-punctuation">:</span> <span class="py-number">101</span><span class="py-punctuation">,</span> <span class="py-string">"nombre"</span><span class="py-punctuation">:</span> <span class="py-string">"Laptop"</span><span class="py-punctuation">,</span> <span class="py-string">"precio"</span><span class="py-punctuation">:</span> <span class="py-number">15000</span><span class="py-punctuation">}</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">producto</span><span class="py-punctuation">.</span><span class="py-method">get</span><span class="py-punctuation">(</span><span class="py-string">"nombre"</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">producto</span><span class="py-punctuation">.</span><span class="py-method">get</span><span class="py-punctuation">(</span><span class="py-string">"stock"</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span> <span class="py-comment"># "stock" no existe, devuelve 0</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Claves:"</span><span class="py-punctuation">,</span> <span class="py-builtin">list</span><span class="py-punctuation">(</span><span class="py-variable">producto</span><span class="py-punctuation">.</span><span class="py-method">keys</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>  <span class="py-comment"># Convertimos a lista para verlas bien</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Valores:"</span><span class="py-punctuation">,</span> <span class="py-builtin">list</span><span class="py-punctuation">(</span><span class="py-variable">producto</span><span class="py-punctuation">.</span><span class="py-method">values</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">clave</span><span class="py-punctuation">,</span> <span class="py-variable">valor</span> <span class="py-keyword">in</span> <span class="py-variable">producto</span><span class="py-punctuation">.</span><span class="py-method">items</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">clave</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">valor</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada (el orden de claves/valores puede variar en Python < 3.7 para <code>.keys()</code> y <code>.values()</code> si no se convierten a lista):</p>
+                <div class="output-block">Laptop
+0
+Claves: ['id', 'nombre', 'precio']
+Valores: [101, 'Laptop', 15000]
+id: 101
+nombre: Laptop
+precio: 15000</div>
+            </div>
+        </div>
+        
+        <!-- CONJUNTOS: Introducción -->
+        <div class="card" data-step="9">
+            <div class="card-header">
+                <span class="card-icon">🧩</span>
+                <h2 class="card-title">Conjuntos: <span class="structure-name">Set</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Los <strong>conjuntos</strong> (sets) son colecciones desordenadas de elementos <span class="highlight">únicos</span>. Esto significa que no pueden tener elementos duplicados.</p>
+                <p>Características principales de los conjuntos:</p>
+                <ul>
+                    <li><strong>Desordenados:</strong> No mantienen un orden específico de los elementos (aunque al imprimirlos pueden parecer ordenados a veces, no debes confiar en ese orden).</li>
+                    <li><strong>Elementos Únicos:</strong> No permiten duplicados. Si intentas añadir un elemento que ya existe, simplemente no se añade.</li>
+                    <li><strong>Modificables (Mutables):</strong> Puedes añadir o eliminar elementos.</li>
+                    <li>Los elementos de un conjunto deben ser de tipo inmutable (ej. números, strings, tuplas). No puedes tener listas dentro de un conjunto.</li>
+                </ul>
+                <p>Se crean usando llaves <code>{ }</code> o la función <code>set()</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Creando un conjunto con llaves</span>
+<span class="py-variable">numeros_unicos</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">}</span> <span class="py-comment"># Los duplicados se eliminan automáticamente</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">numeros_unicos</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Creando un conjunto a partir de una lista (para eliminar duplicados)</span>
+<span class="py-variable">mi_lista</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">'a'</span><span class="py-punctuation">,</span> <span class="py-string">'b'</span><span class="py-punctuation">,</span> <span class="py-string">'a'</span><span class="py-punctuation">,</span> <span class="py-string">'c'</span><span class="py-punctuation">,</span> <span class="py-string">'b'</span><span class="py-punctuation">,</span> <span class="py-string">'d'</span><span class="py-punctuation">]</span>
+<span class="py-variable">conjunto_de_letras</span> <span class="py-operator">=</span> <span class="py-builtin">set</span><span class="py-punctuation">(</span><span class="py-variable">mi_lista</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">conjunto_de_letras</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># ¡Cuidado! Para crear un conjunto vacío, DEBES usar set()</span>
+<span class="py-variable">conjunto_vacio_ok</span> <span class="py-operator">=</span> <span class="py-builtin">set</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-variable">diccionario_vacio_no_set</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-punctuation">}</span> <span class="py-comment"># Esto crea un diccionario vacío, no un conjunto</span></code></pre></div>
+                <p>Salida esperada (el orden de los elementos puede variar):</p>
+                <div class="output-block">{1, 2, 3, 4}
+{'b', 'c', 'd', 'a'}  &lt;-- o cualquier otro orden</div>
+            </div>
+        </div>
+
+        <!-- CONJUNTOS: Operaciones -->
+        <div class="card" data-step="10">
+            <div class="card-header">
+                <span class="card-icon">➕➖</span>
+                <h2 class="card-title">Conjuntos: Operaciones</h2>
+            </div>
+            <div class="card-content">
+                <p>Los conjuntos son muy útiles para operaciones matemáticas de conjuntos como unión, intersección y diferencia.</p>
+                <ul>
+                    <li><code><span class="py-method">add(elemento)</span></code>: Añade un elemento al conjunto.</li>
+                    <li><code><span class="py-method">remove(elemento)</span></code>: Elimina un elemento. Si no existe, da <code>KeyError</code>.</li>
+                    <li><code><span class="py-method">discard(elemento)</span></code>: Elimina un elemento si está presente. No da error si no existe.</li>
+                    <li><code><span class="py-method">union(otro_conjunto)</span></code> o <code>|</code>: Devuelve un nuevo conjunto con elementos de ambos.</li>
+                    <li><code><span class="py-method">intersection(otro_conjunto)</span></code> o <code>&</code>: Devuelve un nuevo conjunto con elementos comunes a ambos.</li>
+                    <li><code><span class="py-method">difference(otro_conjunto)</span></code> o <code>-</code>: Devuelve un nuevo conjunto con elementos del primer conjunto que no están en el segundo.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">set_a</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">}</span>
+<span class="py-variable">set_b</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">}</span>
+
+<span class="py-variable">set_a</span><span class="py-punctuation">.</span><span class="py-method">add</span><span class="py-punctuation">(</span><span class="py-number">5</span><span class="py-punctuation">)</span> <span class="py-comment"># set_a ahora es {1, 2, 3, 4, 5}</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Set A después de add: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">set_a</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">union_sets</span> <span class="py-operator">=</span> <span class="py-variable">set_a</span><span class="py-punctuation">.</span><span class="py-method">union</span><span class="py-punctuation">(</span><span class="py-variable">set_b</span><span class="py-punctuation">)</span> <span class="py-comment"># o set_a | set_b</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Unión: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">union_sets</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">interseccion_sets</span> <span class="py-operator">=</span> <span class="py-variable">set_a</span><span class="py-punctuation">.</span><span class="py-method">intersection</span><span class="py-punctuation">(</span><span class="py-variable">set_b</span><span class="py-punctuation">)</span> <span class="py-comment"># o set_a & set_b</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Intersección: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">interseccion_sets</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada (el orden puede variar):</p>
+                <div class="output-block">Set A después de add: {1, 2, 3, 4, 5}
+Unión: {1, 2, 3, 4, 5, 6}
+Intersección: {3, 4, 5}</div>
+            </div>
+        </div>
+        
+        <!-- Comparación de Estructuras -->
+        <div class="card" data-step="11">
+            <div class="card-header">
+                <span class="card-icon">⚖️</span>
+                <h2 class="card-title">Comparación: ¿Cuándo Usar Cuál?</h2>
+            </div>
+            <div class="card-content">
+                <p>Aquí tienes una tabla resumen para ayudarte a decidir qué estructura usar:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Lista (List) <code>[]</code></th>
+                            <th>Tupla (Tuple) <code>()</code></th>
+                            <th>Diccionario (Dict) <code>{}</code></th>
+                            <th>Conjunto (Set) <code>{}</code> o <code>set()</code></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ordenada</strong></td>
+                            <td>Sí</td>
+                            <td>Sí</td>
+                            <td>Sí (Python 3.7+)</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modificable (Mutable)</strong></td>
+                            <td>Sí</td>
+                            <td>No (Inmutable)</td>
+                            <td>Sí</td>
+                            <td>Sí (pero sus elementos deben ser inmutables)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Permite Duplicados</strong></td>
+                            <td>Sí</td>
+                            <td>Sí</td>
+                            <td>No para claves (valores sí)</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Acceso</strong></td>
+                            <td>Por índice numérico (<code>lista[0]</code>)</td>
+                            <td>Por índice numérico (<code>tupla[0]</code>)</td>
+                            <td>Por clave (<code>diccionario['clave']</code>)</td>
+                            <td>No directamente por índice (se itera o verifica pertenencia)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Uso Común</strong></td>
+                            <td>Colecciones generales, secuencias que cambian.</td>
+                            <td>Datos que no deben cambiar (coordenadas, constantes).</td>
+                            <td>Mapeo de claves a valores, búsquedas rápidas por clave.</td>
+                            <td>Verificar pertenencia, eliminar duplicados, operaciones de conjuntos.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Iterando sobre Estructuras de Datos -->
+        <div class="card" data-step="12">
+            <div class="card-header">
+                <span class="card-icon">🚶</span>
+                <h2 class="card-title">Iterando sobre Estructuras</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes usar bucles <code>for</code> para recorrer la mayoría de estas estructuras:</p>
+                <p><strong>Listas y Tuplas:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">mi_lista</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">'a'</span><span class="py-punctuation">,</span> <span class="py-string">'b'</span><span class="py-punctuation">,</span> <span class="py-string">'c'</span><span class="py-punctuation">]</span>
+<span class="py-keyword">for</span> <span class="py-variable">elemento</span> <span class="py-keyword">in</span> <span class="py-variable">mi_lista</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">elemento</span><span class="py-punctuation">)</span></code></pre></div>
+
+                <p><strong>Diccionarios:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">mi_diccionario</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'x'</span><span class="py-punctuation">:</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-string">'y'</span><span class="py-punctuation">:</span> <span class="py-number">2</span><span class="py-punctuation">}</span>
+<span class="py-comment"># Iterar sobre claves (por defecto)</span>
+<span class="py-keyword">for</span> <span class="py-variable">clave</span> <span class="py-keyword">in</span> <span class="py-variable">mi_diccionario</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Clave: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">clave</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">, Valor: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">mi_diccionario</span><span class="py-punctuation">[</span><span class="py-variable">clave</span><span class="py-punctuation">]</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Iterar sobre pares clave-valor</span>
+<span class="py-keyword">for</span> <span class="py-variable">clave</span><span class="py-punctuation">,</span> <span class="py-variable">valor</span> <span class="py-keyword">in</span> <span class="py-variable">mi_diccionario</span><span class="py-punctuation">.</span><span class="py-method">items</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">clave</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> -> </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">valor</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+
+                <p><strong>Conjuntos:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">mi_conjunto</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">}</span>
+<span class="py-keyword">for</span> <span class="py-variable">numero</span> <span class="py-keyword">in</span> <span class="py-variable">mi_conjunto</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">numero</span><span class="py-punctuation">)</span> <span class="py-comment"># El orden no está garantizado</span></code></pre></div>
+            </div>
+        </div>
+
+        <!-- Estructuras Anidadas -->
+        <div class="card" data-step="13">
+            <div class="card-header">
+                <span class="card-icon">🪆</span>
+                <h2 class="card-title">Estructuras de Datos Anidadas</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes tener estructuras de datos dentro de otras estructuras de datos. Esto es muy común y poderoso.</p>
+                <p><strong>Ejemplo: Una lista de diccionarios.</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">estudiantes</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span>
+    <span class="py-punctuation">{</span><span class="py-string">"nombre"</span><span class="py-punctuation">:</span> <span class="py-string">"Luis"</span><span class="py-punctuation">,</span> <span class="py-string">"edad"</span><span class="py-punctuation">:</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-string">"cursos"</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">"Matemáticas"</span><span class="py-punctuation">,</span> <span class="py-string">"Física"</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span><span class="py-punctuation">,</span>
+    <span class="py-punctuation">{</span><span class="py-string">"nombre"</span><span class="py-punctuation">:</span> <span class="py-string">"Elena"</span><span class="py-punctuation">,</span> <span class="py-string">"edad"</span><span class="py-punctuation">:</span> <span class="py-number">22</span><span class="py-punctuation">,</span> <span class="py-string">"cursos"</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">"Historia"</span><span class="py-punctuation">,</span> <span class="py-string">"Literatura"</span><span class="py-punctuation">,</span> <span class="py-string">"Arte"</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-punctuation">]</span>
+
+<span class="py-comment"># Acceder al primer curso del segundo estudiante</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">estudiantes</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">[</span><span class="py-string">"cursos"</span><span class="py-punctuation">]</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Iterar para mostrar nombres y número de cursos</span>
+<span class="py-keyword">for</span> <span class="py-variable">est</span> <span class="py-keyword">in</span> <span class="py-variable">estudiantes</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">est</span><span class="py-punctuation">[</span><span class="py-string">'nombre'</span><span class="py-punctuation">]</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> está inscrito en </span><span class="py-fstring-brace">{</span><span class="py-builtin">len</span><span class="py-punctuation">(</span><span class="py-fstring-interpolated">est</span><span class="py-punctuation">[</span><span class="py-string">'cursos'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> cursos."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Historia
+Luis está inscrito en 2 cursos.
+Elena está inscrita en 3 cursos.</div>
+                <div class="tip-box">
+                    Comprender cómo acceder a elementos en estructuras anidadas es clave. Ve "capa por capa" con los corchetes.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 14: Resumen Final -->
+        <div class="card" data-step="14">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen de Estructuras de Datos</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has aprendido sobre las principales estructuras de datos en Python!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">📋</span>
+                        <strong>Listas <code>[]</code></strong><br>
+                        Ordenadas, modificables, duplicados OK.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔒</span>
+                        <strong>Tuplas <code>()</code></strong><br>
+                        Ordenadas, <strong>inmutables</strong>, duplicados OK.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔑</span>
+                        <strong>Diccionarios <code>{}</code></strong><br>
+                        Pares clave-valor, claves únicas, modificables.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🧩</span>
+                        <strong>Conjuntos <code>{}</code> o <code>set()</code></strong><br>
+                        Desordenados, elementos <strong>únicos</strong>, modificables.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">➡️</span>
+                        <strong>Acceso Lista/Tupla</strong><br>
+                        Por índice: <code>mi_lista[0]</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">➡️</span>
+                        <strong>Acceso Diccionario</strong><br>
+                        Por clave: <code>mi_dict['clave']</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🛠️</span>
+                        <strong>Métodos</strong><br>
+                        Cada estructura tiene métodos útiles (<code>append</code>, <code>get</code>, <code>add</code>, etc.)
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🪆</span>
+                        <strong>Anidadas</strong><br>
+                        Estructuras dentro de estructuras.
+                    </div>
+                </div>
+                <p>Elegir la estructura de datos adecuada es una habilidad importante en la programación. ¡Sigue explorando y practicando con ellas!</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 15 lógicamente) -->
+        <div class="card" data-step="15">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Tutorial Completado!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Felicidades! Has completado este extenso tutorial sobre Estructuras de Datos en Python.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora que puedes organizar datos, el siguiente paso es aprender a crear tus propios bloques de código reutilizables con <strong>Funciones</strong>. Esto te ayudará a escribir programas más modulares, organizados y fáciles de entender.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 14; // Número de tarjetas de contenido
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Finalizar Tutorial 🎯';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

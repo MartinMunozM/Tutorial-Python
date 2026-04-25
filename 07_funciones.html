@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial: Funciones en Python</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🛠️'; /* Icono para funciones (herramientas/construcción) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .function-concept { /* Para resaltar conceptos clave de funciones */
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } /* def, return, lambda, if, else, for, in, yield, global, nonlocal, pass */
+        .code-block .py-builtin { color: #4EC9B0; } /* print, len, map, filter, int, str */
+        .code-block .py-function-name { color: #DCDCAA; } /* Nombres de funciones definidas */
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } /* Parámetros de funciones */
+        .code-block .py-operator { color: #D4D4D4; } /* =, +, *, ** */
+        .code-block .py-punctuation { color: #D4D4D4; } /* (), :, ,, *, ** */
+        .code-block .py-method { color: #DCDCAA;}
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } /* @decorador */
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">12</span>
+            </div>
+            <h1>Tutorial: Funciones en Python</h1>
+            <p>Domina la creación y uso de bloques de código reutilizables</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Introducción a las Funciones -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🧩</span>
+                <h2 class="card-title">¿Qué son las Funciones?</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Llegamos a un concepto fundamental en programación: las <strong>funciones</strong>!</p>
+                <p>Una función es un <span class="highlight">bloque de código organizado y reutilizable</span> que realiza una tarea específica. Piensa en ellas como mini-programas dentro de tu programa principal.</p>
+                <p>Beneficios de usar funciones:</p>
+                <ul>
+                    <li><strong>Reutilización de código:</strong> Escribes el código una vez y lo puedes llamar (usar) muchas veces.</li>
+                    <li><strong>Modularidad:</strong> Dividen un programa grande en partes más pequeñas y manejables.</li>
+                    <li><strong>Legibilidad:</strong> Hacen que el código sea más fácil de entender, ya que cada función tiene un propósito claro.</li>
+                    <li><strong>Abstracción:</strong> Ocultan los detalles complejos de una tarea detrás de un nombre simple.</li>
+                </ul>
+                <div class="tip-box">
+                    Python tiene muchas funciones incorporadas (built-in) como <code>print()</code>, <code>len()</code>, <code>input()</code>, que ya has estado usando. ¡Ahora aprenderás a crear las tuyas!
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Definiendo y Llamando una Función Simple -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">✍️</span>
+                <h2 class="card-title">Definir y Llamar una Función</h2>
+            </div>
+            <div class="card-content">
+                <p>Para crear (definir) una función en Python, usamos la palabra clave <code>def</code>, seguida del nombre de la función, paréntesis <code>()</code>, y dos puntos <code>:</code>. El código dentro de la función debe estar indentado.</p>
+                <p>Sintaxis básica para definir una función:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">nombre_de_la_funcion</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código que realiza la función</span>
+    <span class="py-comment"># (Debe estar indentado)</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡Esta función ha sido llamada!"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Para usar (llamar o invocar) la función, simplemente escribes su nombre seguido de paréntesis:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-function-name">nombre_de_la_funcion</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Así se llama a la función</span></code></pre></div>
+                <p><strong>Ejemplo completo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Definición de la función</span>
+<span class="py-keyword">def</span> <span class="py-function-name">saludar</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡Hola desde la función saludar!"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Llamada a la función</span>
+<span class="py-function-name">saludar</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-function-name">saludar</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Podemos llamarla cuantas veces queramos</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">¡Hola desde la función saludar!
+¡Hola desde la función saludar!</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Parámetros y Argumentos -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">📥</span>
+                <h2 class="card-title">Pasando Información: <span class="function-concept">Parámetros y Argumentos</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Las funciones pueden recibir información para trabajar con ella. Esta información se pasa a través de <strong>parámetros</strong> (variables definidas en la declaración de la función) y <strong>argumentos</strong> (los valores reales que se envían al llamar la función).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">saludar_a</span><span class="py-punctuation">(</span><span class="py-parameter">nombre</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>  <span class="py-comment"># 'nombre' es un parámetro</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"¡Hola, </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">nombre</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">! ¿Cómo estás?"</span><span class="py-punctuation">)</span>
+
+<span class="py-function-name">saludar_a</span><span class="py-punctuation">(</span><span class="py-string">"Ana"</span><span class="py-punctuation">)</span>         <span class="py-comment"># "Ana" es un argumento</span>
+<span class="py-function-name">saludar_a</span><span class="py-punctuation">(</span><span class="py-string">"Dr. Muñoz"</span><span class="py-punctuation">)</span>   <span class="py-comment"># "Dr. Muñoz" es otro argumento</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">¡Hola, Ana! ¿Cómo estás?
+¡Hola, Dr. Muñoz! ¿Cómo estás?</div>
+                <p>Una función puede tener múltiples parámetros:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">sumar</span><span class="py-punctuation">(</span><span class="py-parameter">a</span><span class="py-punctuation">,</span> <span class="py-parameter">b</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-variable">resultado</span> <span class="py-operator">=</span> <span class="py-parameter">a</span> <span class="py-operator">+</span> <span class="py-parameter">b</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"La suma de </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">a</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> y </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">b</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> es </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">resultado</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-function-name">sumar</span><span class="py-punctuation">(</span><span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span>
+<span class="py-function-name">sumar</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">,</span> <span class="py-number">200</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">La suma de 5 y 3 es 8
+La suma de 100 y 200 es 300</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: La Sentencia `return` -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">📤</span>
+                <h2 class="card-title">Devolviendo Valores: La Sentencia <code>return</code></h2>
+            </div>
+            <div class="card-content">
+                <p>Hasta ahora, nuestras funciones solo han impreso cosas. Pero a menudo, queremos que una función <span class="highlight">calcule un valor y nos lo devuelva</span> para que podamos usarlo en otra parte de nuestro código.</p>
+                <p>Para esto, usamos la sentencia <code>return</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">multiplicar</span><span class="py-punctuation">(</span><span class="py-parameter">x</span><span class="py-punctuation">,</span> <span class="py-parameter">y</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-variable">producto</span> <span class="py-operator">=</span> <span class="py-parameter">x</span> <span class="py-operator">*</span> <span class="py-parameter">y</span>
+    <span class="py-keyword">return</span> <span class="py-variable">producto</span>  <span class="py-comment"># Devuelve el valor de 'producto'</span>
+
+<span class="py-variable">resultado1</span> <span class="py-operator">=</span> <span class="py-function-name">multiplicar</span><span class="py-punctuation">(</span><span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">)</span> <span class="py-comment"># El valor devuelto se asigna a resultado1</span>
+<span class="py-variable">resultado2</span> <span class="py-operator">=</span> <span class="py-function-name">multiplicar</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Resultado 1: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">resultado1</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Resultado 2: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">resultado2</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Suma de resultados: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">resultado1</span> <span class="py-operator">+</span> <span class="py-fstring-interpolated">resultado2</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Resultado 1: 20
+Resultado 2: 30
+Suma de resultados: 50</div>
+                <div class="tip-box">
+                    Una función puede tener múltiples sentencias <code>return</code> (por ejemplo, dentro de un <code>if</code>/<code>else</code>). Sin embargo, <span class="highlight">tan pronto como se ejecuta una sentencia <code>return</code>, la función termina</span> y devuelve ese valor. Cualquier código después de un <code>return</code> en la misma ruta de ejecución no se ejecutará.
+                </div>
+                <p>Si una función no tiene una sentencia <code>return</code> explícita, o tiene un <code>return</code> sin un valor, implícitamente devuelve <code>None</code>.</p>
+            </div>
+        </div>
+
+        <!-- Paso 5: Parámetros por Defecto y Argumentos Nombrados -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">⚙️</span>
+                <h2 class="card-title">Parámetros <span class="function-concept">por Defecto</span> y Argumentos <span class="function-concept">Nombrados</span></h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Parámetros por Defecto:</strong> Puedes asignar un valor por defecto a un parámetro en la definición de la función. Si al llamar la función no se proporciona un argumento para ese parámetro, se usará el valor por defecto.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">potencia</span><span class="py-punctuation">(</span><span class="py-parameter">base</span><span class="py-punctuation">,</span> <span class="py-parameter">exponente</span><span class="py-operator">=</span><span class="py-number">2</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span> <span class="py-comment"># 'exponente' tiene valor por defecto 2</span>
+    <span class="py-keyword">return</span> <span class="py-parameter">base</span> <span class="py-operator">**</span> <span class="py-parameter">exponente</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">potencia</span><span class="py-punctuation">(</span><span class="py-number">3</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>        <span class="py-comment"># Usa exponente=2 por defecto (3^2)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">potencia</span><span class="py-punctuation">(</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>      <span class="py-comment"># Proporcionamos exponente=3 (3^3)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">9
+27</div>
+                <div class="warning-box">Los parámetros con valores por defecto deben ir <strong>después</strong> de los parámetros sin valores por defecto en la definición de la función.</div>
+
+                <p><strong>Argumentos Nombrados (Keyword Arguments):</strong> Al llamar a una función, puedes especificar a qué parámetro corresponde cada argumento usando el nombre del parámetro.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">describir_mascota</span><span class="py-punctuation">(</span><span class="py-parameter">tipo_animal</span><span class="py-punctuation">,</span> <span class="py-parameter">nombre_mascota</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Tengo un </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">tipo_animal</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">."</span><span class="py-punctuation">)</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Mi </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">tipo_animal</span><span class="py-fstring-brace">}</span><span class="py-fstring-text"> se llama </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">nombre_mascota</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">."</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Llamada posicional (el orden importa)</span>
+<span class="py-function-name">describir_mascota</span><span class="py-punctuation">(</span><span class="py-string">"perro"</span><span class="py-punctuation">,</span> <span class="py-string">"Firulais"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Llamada con argumentos nombrados (el orden NO importa)</span>
+<span class="py-function-name">describir_mascota</span><span class="py-punctuation">(</span><span class="py-parameter">nombre_mascota</span><span class="py-operator">=</span><span class="py-string">"Mishi"</span><span class="py-punctuation">,</span> <span class="py-parameter">tipo_animal</span><span class="py-operator">=</span><span class="py-string">"gato"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Esto mejora la legibilidad, especialmente con funciones que tienen muchos parámetros.</p>
+            </div>
+        </div>
+
+        <!-- Paso 6: Ámbito de las Variables (Scope) -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🌍📍</span>
+                <h2 class="card-title">Ámbito de las Variables (<span class="function-concept">Scope</span>)</h2>
+            </div>
+            <div class="card-content">
+                <p>El <strong>ámbito</strong> (o scope) de una variable se refiere a la parte del programa donde esa variable es accesible.</p>
+                <ul>
+                    <li><strong>Variables Locales:</strong> Se definen dentro de una función. Solo son accesibles desde dentro de esa función.</li>
+                    <li><strong>Variables Globales:</strong> Se definen fuera de todas las funciones. Son accesibles desde cualquier parte del código (dentro y fuera de las funciones).</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">variable_global</span> <span class="py-operator">=</span> <span class="py-string">"Soy global"</span>
+
+<span class="py-keyword">def</span> <span class="py-function-name">mi_funcion</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-variable">variable_local</span> <span class="py-operator">=</span> <span class="py-string">"Soy local"</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">variable_local</span><span class="py-punctuation">)</span>       <span class="py-comment"># Acceso a variable local (OK)</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">variable_global</span><span class="py-punctuation">)</span>      <span class="py-comment"># Acceso a variable global (OK)</span>
+
+<span class="py-function-name">mi_funcion</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">variable_global</span><span class="py-punctuation">)</span>        <span class="py-comment"># Acceso a variable global (OK)</span>
+<span class="py-comment"># print(variable_local)      # Esto daría un NameError, 'variable_local' no está definida aquí</span></code></pre></div>
+                <p>Salida esperada (sin la línea comentada):</p>
+                <div class="output-block">Soy local
+Soy global
+Soy global</div>
+                <div class="tip-box">
+                    Si una variable local tiene el mismo nombre que una global, dentro de la función, la local "oculta" a la global. Para modificar una variable global desde dentro de una función, necesitarías usar la palabra clave <code>global</code> (aunque su uso excesivo se considera mala práctica).
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 7: Docstrings (Cadenas de Documentación) -->
+        <div class="card" data-step="7">
+            <div class="card-header">
+                <span class="card-icon">📜</span>
+                <h2 class="card-title">Documentando Funciones: <span class="function-concept">Docstrings</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Es una buena práctica documentar tus funciones para explicar qué hacen, qué parámetros reciben y qué devuelven. En Python, esto se hace con <strong>docstrings</strong> (cadenas de documentación).</p>
+                <p>Un docstring es una cadena de texto (generalmente multilínea, encerrada en triples comillas <code>""" """</code> o <code>''' '''</code>) que se coloca como la <span class="highlight">primera línea</span> dentro de la definición de una función.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">calcular_area_rectangulo</span><span class="py-punctuation">(</span><span class="py-parameter">base</span><span class="py-punctuation">,</span> <span class="py-parameter">altura</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-string">"""
+    Calcula el área de un rectángulo.
+
+    Parámetros:
+    base (float): La longitud de la base del rectángulo.
+    altura (float): La altura del rectángulo.
+
+    Devuelve:
+    float: El área calculada del rectángulo.
+    """</span>
+    <span class="py-keyword">if</span> <span class="py-parameter">base</span> <span class="py-operator">&lt;</span> <span class="py-number">0</span> <span class="py-keyword">or</span> <span class="py-parameter">altura</span> <span class="py-operator">&lt;</span> <span class="py-number">0</span><span class="py-punctuation">:</span>
+        <span class="py-keyword">return</span> <span class="py-string">"Las dimensiones deben ser positivas."</span>
+    <span class="py-keyword">return</span> <span class="py-parameter">base</span> <span class="py-operator">*</span> <span class="py-parameter">altura</span>
+
+<span class="py-comment"># Puedes acceder al docstring de una función usando el atributo __doc__</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">calcular_area_rectangulo</span><span class="py-punctuation">.</span><span class="py-variable">__doc__</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># O usando la función help()</span>
+<span class="py-comment"># help(calcular_area_rectangulo) # Descomenta para probar en un entorno Python</span></code></pre></div>
+                <p>Escribir buenos docstrings es crucial para que otros (¡y tu yo del futuro!) puedan entender y usar tus funciones correctamente.</p>
+            </div>
+        </div>
+
+        <!-- Paso 8: Argumentos Variables: *args -->
+        <div class="card" data-step="8">
+            <div class="card-header">
+                <span class="card-icon">✨</span>
+                <h2 class="card-title">Argumentos Variables: <span class="function-concept">*args</span></h2>
+            </div>
+            <div class="card-content">
+                <p>A veces, quieres que una función pueda aceptar un <span class="highlight">número variable de argumentos posicionales</span>. Python te permite hacer esto usando la sintaxis <code>*args</code>.</p>
+                <p>Dentro de la función, <code>args</code> será una <strong>tupla</strong> que contendrá todos los argumentos posicionales extra que se pasaron.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">sumar_todos</span><span class="py-punctuation">(</span><span class="py-operator">*</span><span class="py-parameter">numeros</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span> <span class="py-comment"># 'numeros' será una tupla</span>
+    <span class="py-string">"""Suma todos los números pasados como argumentos."""</span>
+    <span class="py-variable">total</span> <span class="py-operator">=</span> <span class="py-number">0</span>
+    <span class="py-keyword">for</span> <span class="py-variable">num</span> <span class="py-keyword">in</span> <span class="py-parameter">numeros</span><span class="py-punctuation">:</span>
+        <span class="py-variable">total</span> <span class="py-operator">+=</span> <span class="py-variable">num</span>
+    <span class="py-keyword">return</span> <span class="py-variable">total</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">sumar_todos</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">sumar_todos</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">40</span><span class="py-punctuation">,</span> <span class="py-number">50</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">sumar_todos</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span> <span class="py-comment"># También funciona sin argumentos</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">6
+150
+0</div>
+                <div class="tip-box">
+                    El nombre <code>args</code> es una convención, podrías usar <code>*mi_tupla_de_argumentos</code>, pero <code>*args</code> es universalmente entendido. Puedes tener parámetros normales antes de <code>*args</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 9: Argumentos de Palabra Clave Variables: **kwargs -->
+        <div class="card" data-step="9">
+            <div class="card-header">
+                <span class="card-icon">🔑✨</span>
+                <h2 class="card-title">Argumentos de Palabra Clave Variables: <span class="function-concept">**kwargs</span></h2>
+            </div>
+            <div class="card-content">
+                <p>De manera similar a <code>*args</code>, Python permite que una función acepte un <span class="highlight">número variable de argumentos nombrados (de palabra clave)</span> usando la sintaxis <code>**kwargs</code>.</p>
+                <p>Dentro de la función, <code>kwargs</code> será un <strong>diccionario</strong> que contendrá todos los argumentos nombrados extra que se pasaron.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">mostrar_info</span><span class="py-punctuation">(</span><span class="py-operator">**</span><span class="py-parameter">datos_persona</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span> <span class="py-comment"># 'datos_persona' será un diccionario</span>
+    <span class="py-string">"""Muestra la información pasada como argumentos nombrados."""</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Información recibida:"</span><span class="py-punctuation">)</span>
+    <span class="py-keyword">for</span> <span class="py-variable">clave</span><span class="py-punctuation">,</span> <span class="py-variable">valor</span> <span class="py-keyword">in</span> <span class="py-parameter">datos_persona</span><span class="py-punctuation">.</span><span class="py-method">items</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"  - </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">clave</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">valor</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-function-name">mostrar_info</span><span class="py-punctuation">(</span><span class="py-parameter">nombre</span><span class="py-operator">=</span><span class="py-string">"Luis"</span><span class="py-punctuation">,</span> <span class="py-parameter">edad</span><span class="py-operator">=</span><span class="py-number">28</span><span class="py-punctuation">,</span> <span class="py-parameter">ciudad</span><span class="py-operator">=</span><span class="py-string">"Monterrey"</span><span class="py-punctuation">)</span>
+<span class="py-function-name">mostrar_info</span><span class="py-punctuation">(</span><span class="py-parameter">producto</span><span class="py-operator">=</span><span class="py-string">"Laptop"</span><span class="py-punctuation">,</span> <span class="py-parameter">precio</span><span class="py-operator">=</span><span class="py-number">25000</span><span class="py-punctuation">,</span> <span class="py-parameter">en_stock</span><span class="py-operator">=</span><span class="py-boolean-none">True</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Información recibida:
+  - nombre: Luis
+  - edad: 28
+  - ciudad: Monterrey
+Información recibida:
+  - producto: Laptop
+  - precio: 25000
+  - en_stock: True</div>
+                <div class="tip-box">
+                    El nombre <code>kwargs</code> (keyword arguments) es una convención. Puedes tener parámetros normales, luego <code>*args</code>, y luego <code>**kwargs</code>, en ese orden: <code>def func(param1, param2, *args, **kwargs):</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 10: Funciones Lambda (Anónimas) -->
+        <div class="card" data-step="10">
+            <div class="card-header">
+                <span class="card-icon">🥷</span>
+                <h2 class="card-title">Funciones <span class="function-concept">Lambda</span> (Anónimas)</h2>
+            </div>
+            <div class="card-content">
+                <p>Python permite crear pequeñas funciones anónimas (sin nombre) usando la palabra clave <code>lambda</code>. Son útiles para funciones simples que se usan una sola vez o como argumentos para funciones de orden superior (como <code>map</code>, <code>filter</code>).</p>
+                <p>Sintaxis: <code>lambda argumentos: expresion</code></p>
+                <ul>
+                    <li>Una función lambda puede tener cualquier número de argumentos, pero solo puede tener <strong>una expresión</strong>.</li>
+                    <li>La expresión se evalúa y se devuelve.</li>
+                    <li>No pueden contener múltiples sentencias ni docstrings complejos.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Función normal para sumar 5</span>
+<span class="py-keyword">def</span> <span class="py-function-name">sumar_cinco_normal</span><span class="py-punctuation">(</span><span class="py-parameter">x</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-keyword">return</span> <span class="py-parameter">x</span> <span class="py-operator">+</span> <span class="py-number">5</span>
+
+<span class="py-comment"># Equivalente con lambda</span>
+<span class="py-variable">sumar_cinco_lambda</span> <span class="py-operator">=</span> <span class="py-keyword">lambda</span> <span class="py-parameter">x</span><span class="py-punctuation">:</span> <span class="py-parameter">x</span> <span class="py-operator">+</span> <span class="py-number">5</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-function-name">sumar_cinco_normal</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">sumar_cinco_lambda</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Lambda con múltiples argumentos</span>
+<span class="py-variable">multiplicar</span> <span class="py-operator">=</span> <span class="py-keyword">lambda</span> <span class="py-parameter">a</span><span class="py-punctuation">,</span> <span class="py-parameter">b</span><span class="py-punctuation">:</span> <span class="py-parameter">a</span> <span class="py-operator">*</span> <span class="py-parameter">b</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">multiplicar</span><span class="py-punctuation">(</span><span class="py-number">7</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">15
+15
+42</div>
+                <p>Se usan a menudo con funciones como <code>map()</code> (aplica una función a todos los ítems de un iterable) o <code>filter()</code> (filtra ítems de un iterable).</p>
+            </div>
+        </div>
+
+        <!-- Paso 11: Decoradores (Introducción) -->
+        <div class="card" data-step="11">
+            <div class="card-header">
+                <span class="card-icon">🎁</span>
+                <h2 class="card-title">Introducción a <span class="function-concept">Decoradores</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Los <strong>decoradores</strong> son una forma de metaprogramación en Python que permite <span class="highlight">modificar o mejorar funciones o métodos de una manera limpia y legible</span>. Un decorador es, en esencia, una función que toma otra función como argumento (la función decorada), le añade alguna funcionalidad y devuelve otra función (generalmente una versión modificada de la original o una nueva que la envuelve).</p>
+                <p>La sintaxis usa el símbolo <code>@</code> seguido del nombre del decorador, justo antes de la definición de la función que se quiere decorar.</p>
+                <p><strong>Ejemplo conceptual (muy simplificado):</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">def</span> <span class="py-function-name">mi_decorador</span><span class="py-punctuation">(</span><span class="py-parameter">funcion_a_decorar</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-keyword">def</span> <span class="py-function-name">envoltura</span><span class="py-punctuation">(</span><span class="py-operator">*</span><span class="py-parameter">args</span><span class="py-punctuation">,</span> <span class="py-operator">**</span><span class="py-parameter">kwargs</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Algo antes de llamar a la función."</span><span class="py-punctuation">)</span>
+        <span class="py-variable">resultado</span> <span class="py-operator">=</span> <span class="py-parameter">funcion_a_decorar</span><span class="py-punctuation">(</span><span class="py-operator">*</span><span class="py-parameter">args</span><span class="py-punctuation">,</span> <span class="py-operator">**</span><span class="py-parameter">kwargs</span><span class="py-punctuation">)</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Algo después de llamar a la función."</span><span class="py-punctuation">)</span>
+        <span class="py-keyword">return</span> <span class="py-variable">resultado</span>
+    <span class="py-keyword">return</span> <span class="py-function-name">envoltura</span>
+
+<span class="py-decorator">@mi_decorador</span>
+<span class="py-keyword">def</span> <span class="py-function-name">saluda</span><span class="py-punctuation">(</span><span class="py-parameter">nombre</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"¡Hola, </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">nombre</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">!"</span><span class="py-punctuation">)</span>
+
+<span class="py-function-name">saluda</span><span class="py-punctuation">(</span><span class="py-string">"Mundo"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Algo antes de llamar a la función.
+¡Hola, Mundo!
+Algo después de llamar a la función.</div>
+                <div class="tip-box">
+                    Los decoradores son un tema avanzado, pero muy potente. Se usan para logging, control de acceso, instrumentación, y mucho más, sin modificar directamente el código de la función original.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 12: Resumen Final -->
+        <div class="card" data-step="12">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen de Funciones</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Felicidades por llegar hasta aquí! Has aprendido mucho sobre funciones:</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">✍️</span>
+                        <strong>Definición</strong><br>
+                        <code>def func():</code><br>Bloque reutilizable.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📞</span>
+                        <strong>Llamada</strong><br>
+                        <code>func()</code><br>Ejecuta la función.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📥</span>
+                        <strong>Parámetros</strong><br>
+                        <code>def f(p1, p2):</code><br>Reciben datos.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📤</span>
+                        <strong><code>return</code></strong><br>
+                        Devuelve un valor.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Por Defecto</strong><br>
+                        <code>def f(p=val):</code><br>Valores opcionales.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🏷️</span>
+                        <strong>Nombrados</strong><br>
+                        <code>f(p=val)</code><br>Claridad en llamadas.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🌍</span>
+                        <strong>Scope</strong><br>
+                        Variables locales vs. globales.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📜</span>
+                        <strong>Docstrings</strong><br>
+                        <code>"""Docs..."""</code><br>Documentación.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">✨</span>
+                        <strong><code>*args</code></strong><br>
+                        Argumentos posicionales variables.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔑✨</span>
+                        <strong><code>**kwargs</code></strong><br>
+                        Argumentos nombrados variables.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🥷</span>
+                        <strong><code>lambda</code></strong><br>
+                        Funciones anónimas cortas.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🎁</span>
+                        <strong>Decoradores</strong><br>
+                        <code>@decorador</code><br>Modifican funciones.
+                    </div>
+                </div>
+                <p>Las funciones son la base para escribir código Python bien estructurado, eficiente y mantenible. ¡Son tus bloques de construcción!</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 13 lógicamente) -->
+        <div class="card" data-step="13">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Semana Completada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Felicidades, has completado todos los modulos de la semana 1 correspondiente a la introducción de Python!</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¡Tu Viaje Apenas Comienza!</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Con estos fundamentos (print, variables, condicionales, bucles, estructuras de datos y funciones), tienes las herramientas para empezar a construir programas más complejos. Sigue practicando, explora módulos de Python, y ¡no dejes de aprender!</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Materiales diseñados por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                    <p>¡Mucho éxito en el resto del diplomado!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 12; // Número de tarjetas de contenido para Funciones
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Finalizar Tutoriales 🏆'; // Cambiado para reflejar el fin de la serie
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

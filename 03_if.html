@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial: Condicionales (if, elif, else) en Python</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🤔'; /* Icono para condicionales */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } /* if, else, elif, and, or, not, pass */
+        .code-block .py-builtin { color: #4EC9B0; } /* print */
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } /* ==, !=, >, <, >=, <=, +, = */
+        .code-block .py-punctuation { color: #D4D4D4; } /* :, () */
+        .code-block .py-boolean-none { color: #569CD6; } /* True, False */
+        .code-block .py-decorator { color: #DCDCAA; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; /* Changed for clarity */
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; /* Adjusted padding */
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { /* Style for code in summary items */
+            font-size: 0.85em;
+            padding: 1px 4px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .output-block::before {
+            display: none;
+        }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">10</span>
+            </div>
+            <h1>Tutorial: Tomando Decisiones en Python</h1>
+            <p>Aprende a usar <code>if</code>, <code>elif</code>, y <code>else</code> para controlar el flujo de tu programa</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Introducción a las Decisiones -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🚦</span>
+                <h2 class="card-title">¿Por Qué Tomar Decisiones?</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Hola! En la vida real, constantemente tomamos decisiones basadas en ciertas condiciones: "Si llueve, llevo paraguas", "Si tengo hambre, como algo".</p>
+                <p>En programación, también necesitamos que nuestros programas tomen decisiones para comportarse de manera diferente según la situación. Para esto, usamos las <strong>estructuras condicionales</strong>.</p>
+                <p>Python nos ofrece las palabras clave <code>if</code>, <code>elif</code> (que significa "else if"), y <code>else</code> para construir estas "<span class="highlight">ramas de decisión</span>" en nuestro código.</p>
+                <div class="tip-box">
+                    Piensa en los condicionales como bifurcaciones en un camino: según una condición, tu programa tomará una ruta u otra.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: La Sentencia `if` Básica y Condiciones Lógicas -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">❓</span>
+                <h2 class="card-title">La Sentencia <code>if</code> y Condiciones</h2>
+            </div>
+            <div class="card-content">
+                <p>La estructura <code>if</code> es la más fundamental. Le dice a Python: "<strong>Si</strong> una condición es verdadera, entonces ejecuta este bloque de código".</p>
+                <p>La sintaxis es:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">if</span> <span class="py-variable">condicion</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código a ejecutar si la condición es True</span>
+    <span class="py-comment"># ¡Este código DEBE estar indentado (con espacios o tabulaciones)!</span></code></pre></div>
+                <p>Una <strong>condición</strong> es una expresión que Python evalúa como <code>True</code> (verdadero) o <code>False</code> (falso). Usamos <strong>operadores de comparación</strong> para crear estas condiciones:</p>
+                <ul>
+                    <li><code>==</code> : Igual a</li>
+                    <li><code>!=</code> : No igual a (diferente de)</li>
+                    <li><code>&gt;</code> : Mayor que</li>
+                    <li><code>&lt;</code> : Menor que</li>
+                    <li><code>&gt;=</code> : Mayor o igual que</li>
+                    <li><code>&lt;=</code> : Menor o igual que</li>
+                </ul>
+                <p><strong>Ejemplo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">edad</span> <span class="py-operator">=</span> <span class="py-number">18</span>
+<span class="py-keyword">if</span> <span class="py-variable">edad</span> <span class="py-operator">&gt;=</span> <span class="py-number">18</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Eres mayor de edad."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada (si ejecutas este código):</p>
+                <div class="output-block">Eres mayor de edad.</div>
+                <div class="warning-box">
+                    <strong>¡La indentación es CRUCIAL en Python!</strong> El código que pertenece al bloque <code>if</code> debe estar sangrado (generalmente 4 espacios). Si no lo haces, Python dará un error (<code>IndentationError</code>).
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Añadiendo una Alternativa con `else` -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">↔️</span>
+                <h2 class="card-title">Añadiendo una Alternativa: <code>else</code></h3>
+            </div>
+            <div class="card-content">
+                <p>¿Qué pasa si la condición del <code>if</code> es falsa? A veces queremos que se ejecute un código diferente en ese caso. Para esto, usamos <code>else</code>.</p>
+                <p>La sintaxis es:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">if</span> <span class="py-variable">condicion</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código si la condición es True</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código si la condición es False</span></code></pre></div>
+                <p><strong>Ejemplo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">temperatura</span> <span class="py-operator">=</span> <span class="py-number">15</span>
+<span class="py-keyword">if</span> <span class="py-variable">temperatura</span> <span class="py-operator">&gt;</span> <span class="py-number">25</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Hace calor, ¡ponte ropa ligera!"</span><span class="py-punctuation">)</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"No hace tanto calor, quizás necesites una chaqueta."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">No hace tanto calor, quizás necesites una chaqueta.</div>
+                <p>Aquí, como <code>temperatura</code> (15) no es mayor que 25, la condición del <code>if</code> es <code>False</code>, y se ejecuta el código dentro del bloque <code>else</code>.</p>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Múltiples Condiciones con `elif` -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🚦</span>
+                <h2 class="card-title">Múltiples Condiciones: <code>elif</code></h3>
+            </div>
+            <div class="card-content">
+                <p>A veces tenemos más de dos posibilidades. Para esto, usamos <code>elif</code> (contracción de "else if").</p>
+                <p>Puedes tener tantos <code>elif</code> como necesites. Python los evaluará en orden. Tan pronto como encuentre una condición <code>True</code>, ejecutará su bloque y saltará el resto de <code>elif</code> y el <code>else</code> (si existe).</p>
+                <p>Sintaxis:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">if</span> <span class="py-variable">condicion1</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código si condicion1 es True</span>
+<span class="py-keyword">elif</span> <span class="py-variable">condicion2</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código si condicion1 es False Y condicion2 es True</span>
+<span class="py-keyword">elif</span> <span class="py-variable">condicion3</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># ... y así sucesivamente</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Código si TODAS las condiciones anteriores son False (opcional)</span></code></pre></div>
+                <p><strong>Ejemplo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">nota</span> <span class="py-operator">=</span> <span class="py-number">75</span>
+<span class="py-keyword">if</span> <span class="py-variable">nota</span> <span class="py-operator">&gt;=</span> <span class="py-number">90</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Sobresaliente"</span><span class="py-punctuation">)</span>
+<span class="py-keyword">elif</span> <span class="py-variable">nota</span> <span class="py-operator">&gt;=</span> <span class="py-number">70</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Notable"</span><span class="py-punctuation">)</span>
+<span class="py-keyword">elif</span> <span class="py-variable">nota</span> <span class="py-operator">&gt;=</span> <span class="py-number">50</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Aprobado"</span><span class="py-punctuation">)</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Suspenso"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Notable</div>
+                <p>Se imprimirá "Notable" porque <code>nota &gt;= 90</code> es falso, pero <code>nota &gt;= 70</code> es verdadero.</p>
+            </div>
+        </div>
+
+        <!-- Paso 5: Operadores Lógicos: `and`, `or`, `not` -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🔗</span>
+                <h2 class="card-title">Operadores Lógicos: <code>and</code>, <code>or</code>, <code>not</code></h2>
+            </div>
+            <div class="card-content">
+                <p>A veces necesitas combinar varias condiciones. Para esto, Python nos da los operadores lógicos:</p>
+                <ul>
+                    <li>
+                        <strong><code>and</code> (Y lógico):</strong> La expresión completa es <code>True</code> solo si <strong>ambas</strong> condiciones a sus lados son <code>True</code>.
+                        <div class="code-block"><pre><code class="language-python"><span class="py-variable">edad</span> <span class="py-operator">=</span> <span class="py-number">25</span>
+<span class="py-variable">tiene_carnet</span> <span class="py-operator">=</span> <span class="py-boolean-none">True</span>
+<span class="py-keyword">if</span> <span class="py-variable">edad</span> <span class="py-operator">&gt;=</span> <span class="py-number">18</span> <span class="py-keyword">and</span> <span class="py-variable">tiene_carnet</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Puedes conducir."</span><span class="py-punctuation">)</span></code></pre></div>
+                        <p>Salida: <div class="output-block" style="display: inline-block; padding: 5px 10px; margin: 0;">Puedes conducir.</div></p>
+                    </li>
+                    <li>
+                        <strong><code>or</code> (O lógico):</strong> La expresión completa es <code>True</code> si <strong>al menos una</strong> de las condiciones a sus lados es <code>True</code>.
+                        <div class="code-block"><pre><code class="language-python"><span class="py-variable">es_fin_de_semana</span> <span class="py-operator">=</span> <span class="py-boolean-none">True</span>
+<span class="py-variable">es_festivo</span> <span class="py-operator">=</span> <span class="py-boolean-none">False</span>
+<span class="py-keyword">if</span> <span class="py-variable">es_fin_de_semana</span> <span class="py-keyword">or</span> <span class="py-variable">es_festivo</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡Día libre!"</span><span class="py-punctuation">)</span></code></pre></div>
+                         <p>Salida: <div class="output-block" style="display: inline-block; padding: 5px 10px; margin: 0;">¡Día libre!</div></p>
+                    </li>
+                    <li>
+                        <strong><code>not</code> (NO lógico):</strong> Invierte el valor de verdad de una condición. Si la condición era <code>True</code>, <code>not condicion</code> es <code>False</code>, y viceversa.
+                        <div class="code-block"><pre><code class="language-python"><span class="py-variable">esta_lloviendo</span> <span class="py-operator">=</span> <span class="py-boolean-none">False</span>
+<span class="py-keyword">if</span> <span class="py-keyword">not</span> <span class="py-variable">esta_lloviendo</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"No está lloviendo, ¡vamos a pasear!"</span><span class="py-punctuation">)</span></code></pre></div>
+                        <p>Salida: <div class="output-block" style="display: inline-block; padding: 5px 10px; margin: 0;">No está lloviendo, ¡vamos a pasear!</div></p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Paso 6: Combinando Operadores Lógicos -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🤝</span>
+                <h2 class="card-title">Combinando Operadores Lógicos</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes combinar múltiples operadores lógicos en una sola condición. Python los evaluará siguiendo un orden de precedencia (<code>not</code> primero, luego <code>and</code>, y finalmente <code>or</code>). Sin embargo, es una <strong>muy buena práctica usar paréntesis <code>()</code></strong> para agrupar condiciones y hacer que tu intención sea clara.</p>
+                <p><strong>Ejemplo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">edad</span> <span class="py-operator">=</span> <span class="py-number">20</span>
+<span class="py-variable">es_estudiante</span> <span class="py-operator">=</span> <span class="py-boolean-none">True</span>
+<span class="py-variable">tiene_descuento_especial</span> <span class="py-operator">=</span> <span class="py-boolean-none">False</span>
+
+<span class="py-comment"># Descuento si (es menor de 25) O (es estudiante Y tiene descuento especial)</span>
+<span class="py-keyword">if</span> <span class="py-punctuation">(</span><span class="py-variable">edad</span> <span class="py-operator">&lt;</span> <span class="py-number">25</span><span class="py-punctuation">)</span> <span class="py-keyword">or</span> <span class="py-punctuation">(</span><span class="py-variable">es_estudiante</span> <span class="py-keyword">and</span> <span class="py-variable">tiene_descuento_especial</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Aplicas para algún tipo de descuento."</span><span class="py-punctuation">)</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"No aplicas para descuentos por ahora."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Aplicas para algún tipo de descuento.</div>
+                <p>En este caso, <code>edad &lt; 25</code> es <code>True</code>. Como es una condición <code>or</code>, el resultado total es <code>True</code>.</p>
+                <div class="tip-box">
+                    ¡Usa paréntesis siempre que tengas dudas sobre el orden de evaluación o para hacer tu código más legible!
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 7: Condicionales Anidados -->
+        <div class="card" data-step="7">
+            <div class="card-header">
+                <span class="card-icon">🪆</span>
+                <h2 class="card-title">Condicionales Anidados (<code>if</code> dentro de <code>if</code>)</h2>
+            </div>
+            <div class="card-content">
+                <p>Puedes poner una estructura <code>if</code>/<code>elif</code>/<code>else</code> completa dentro de otro bloque <code>if</code>, <code>elif</code>, o <code>else</code>. Esto se llama <strong>anidamiento</strong>.</p>
+                <p>Es útil cuando una segunda decisión depende del resultado de la primera.</p>
+                <p><strong>Ejemplo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">usuario_registrado</span> <span class="py-operator">=</span> <span class="py-boolean-none">True</span>
+<span class="py-variable">es_admin</span> <span class="py-operator">=</span> <span class="py-boolean-none">False</span>
+
+<span class="py-keyword">if</span> <span class="py-variable">usuario_registrado</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Bienvenido, usuario."</span><span class="py-punctuation">)</span>
+    <span class="py-keyword">if</span> <span class="py-variable">es_admin</span><span class="py-punctuation">:</span>  <span class="py-comment"># Este 'if' está anidado</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Tienes acceso al panel de administración."</span><span class="py-punctuation">)</span>
+    <span class="py-keyword">else</span><span class="py-punctuation">:</span>
+        <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"No tienes permisos de administrador."</span><span class="py-punctuation">)</span>
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Por favor, regístrate para continuar."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Bienvenido, usuario.
+No tienes permisos de administrador.</div>
+                <div class="warning-box">
+                    <strong>¡Cuidado con la indentación!</strong> Cada nivel de anidamiento requiere una indentación adicional. Demasiados niveles pueden hacer el código difícil de leer.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 8: La Palabra Clave `pass` -->
+        <div class="card" data-step="8">
+            <div class="card-header">
+                <span class="card-icon">🚧</span>
+                <h2 class="card-title">La Palabra Clave <code>pass</code></h2>
+            </div>
+            <div class="card-content">
+                <p>A veces, necesitas una estructura condicional pero aún no sabes qué código irá dentro de ese bloque. Si dejas un bloque vacío, Python dará un error.</p>
+                <p>Para evitar esto, puedes usar la palabra clave <code>pass</code>. <code>pass</code> es una operación nula: no hace nada, simplemente actúa como un marcador de posición.</p>
+                <p><strong>Ejemplo:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">temperatura</span> <span class="py-operator">=</span> <span class="py-number">30</span>
+
+<span class="py-keyword">if</span> <span class="py-variable">temperatura</span> <span class="py-operator">&gt;</span> <span class="py-number">35</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Alerta: ¡Calor extremo!"</span><span class="py-punctuation">)</span>
+<span class="py-keyword">elif</span> <span class="py-variable">temperatura</span> <span class="py-operator">&gt;</span> <span class="py-number">25</span><span class="py-punctuation">:</span>
+    <span class="py-comment"># Aún no he decidido qué hacer aquí, pero no quiero un error</span>
+    <span class="py-keyword">pass</span> 
+<span class="py-keyword">else</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Temperatura normal."</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Fin del reporte de temperatura."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Si la temperatura es 30, se evaluará el <code>elif</code>, se ejecutará <code>pass</code> (no hace nada), y el programa continuará, imprimiendo "Fin del reporte de temperatura.".</p>
+            </div>
+        </div>
+
+        <!-- Paso 9: Comparando con True y False (Buenas Prácticas) -->
+        <div class="card" data-step="9">
+            <div class="card-header">
+                <span class="card-icon">👀</span>
+                <h2 class="card-title">Comparando Booleanos: Buenas Prácticas</h2>
+            </div>
+            <div class="card-content">
+                <p>Cuando tienes una variable booleana (que ya es <code>True</code> o <code>False</code>), no necesitas compararla explícitamente con <code>True</code> o <code>False</code> en tus condiciones <code>if</code>.</p>
+                <p><strong>Forma menos recomendada (pero funciona):</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">esta_listo</span> <span class="py-operator">=</span> <span class="py-boolean-none">True</span>
+<span class="py-keyword">if</span> <span class="py-variable">esta_listo</span> <span class="py-operator">==</span> <span class="py-boolean-none">True</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡El sistema está listo!"</span><span class="py-punctuation">)</span></code></pre></div>
+                
+                <p><strong>Forma recomendada (más "Pythónica" y legible):</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">esta_listo</span> <span class="py-operator">=</span> <span class="py-boolean-none">True</span>
+<span class="py-keyword">if</span> <span class="py-variable">esta_listo</span><span class="py-punctuation">:</span>  <span class="py-comment"># Directamente, si es True, se ejecuta</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"¡El sistema está listo!"</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">hay_errores</span> <span class="py-operator">=</span> <span class="py-boolean-none">False</span>
+<span class="py-keyword">if</span> <span class="py-keyword">not</span> <span class="py-variable">hay_errores</span><span class="py-punctuation">:</span> <span class="py-comment"># Si NO hay_errores (es decir, si hay_errores es False)</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"No hay errores."</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Esto hace tu código más conciso y fácil de entender.</p>
+            </div>
+        </div>
+
+        <!-- Paso 10: Resumen Final -->
+        <div class="card" data-step="10">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen de Condicionales</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Excelente trabajo! Has aprendido a controlar el flujo de tu programa con condicionales:</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">❓</span>
+                        <strong><code>if condicion:</code></strong><br>
+                        Ejecuta si <code>True</code>. ¡Indentación!
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">↔️</span>
+                        <strong><code>else:</code></strong><br>
+                        Alternativa si <code>if</code> es <code>False</code>.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🚦</span>
+                        <strong><code>elif condicion:</code></strong><br>
+                        Múltiples condiciones en secuencia.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Comparadores</strong><br>
+                        <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔗</span>
+                        <strong>Operadores Lógicos</strong><br>
+                        <code>and</code>, <code>or</code>, <code>not</code>. Usa <code>()</code>.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🪆</span>
+                        <strong>Anidados</strong><br>
+                        <code>if</code> dentro de <code>if</code>. Cuida la indentación.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🚧</span>
+                        <strong><code>pass</code></strong><br>
+                        Marcador para bloques vacíos.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">👀</span>
+                        <strong>Booleanos</strong><br>
+                        <code>if var:</code> o <code>if not var:</code>
+                    </div>
+                </div>
+                <p>Los condicionales son una de las herramientas más poderosas en programación. ¡Practícalos mucho!</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 11 lógicamente) -->
+        <div class="card" data-step="11">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Tutorial Completado!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Enhorabuena! Has dominado los conceptos fundamentales de las estructuras condicionales en Python.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora que puedes tomar decisiones, el siguiente paso natural es aprender a repetir tareas con los <strong>bucles</strong> (<code>for</code> y <code>while</code>). ¡Esto abrirá un nuevo mundo de posibilidades para tus programas!</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 10; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Finalizar Tutorial 🎯';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>
