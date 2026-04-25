@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Introducción a Seaborn</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🌊'; /* Icono para Seaborn (ola, por el mar) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .seaborn-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        .plot-placeholder { 
+            width: 100%;
+            min-height: 200px; 
+            background-color: #f0f0f0;
+            border: 1px dashed #ccc;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-style: italic;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Seaborn)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } /* data, x, y, hue, palette */
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* sns.histplot, sns.boxplot, etc. */
+        .code-block .py-module { color: #4EC9B0; } /* seaborn (sns), matplotlib.pyplot (plt), pandas (pd) */
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida / Gráfico (Simulado)'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Introducción a Seaborn</h1>
+            <p>Crea visualizaciones estadísticas atractivas e informativas con facilidad</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué es Seaborn y sus Ventajas? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🌟</span>
+                <h2 class="card-title">¿Qué es <span class="seaborn-concept">Seaborn</span> y sus Ventajas?</h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Seaborn</strong> es una librería de visualización de datos de Python basada en Matplotlib. Proporciona una interfaz de <span class="highlight">alto nivel</span> para dibujar gráficos estadísticos atractivos e informativos.</p>
+                <p><strong>Ventajas sobre Matplotlib (para ciertos usos):</strong></p>
+                <ul>
+                    <li><strong>Integración con Pandas:</strong> Está diseñada para trabajar muy bien con DataFrames de Pandas. Muchas funciones de Seaborn aceptan DataFrames directamente y puedes especificar columnas por sus nombres.</li>
+                    <li><strong>Estilos Atractivos por Defecto:</strong> Los gráficos de Seaborn suelen tener una apariencia más moderna y estéticamente agradable "de fábrica" que los gráficos base de Matplotlib.</li>
+                    <li><strong>Funciones para Gráficos Estadísticos Complejos:</strong> Facilita la creación de visualizaciones estadísticas comunes (como distribuciones, relaciones, datos categóricos) que requerirían más código en Matplotlib puro.</li>
+                    <li><strong>Menos Código para Gráficos Comunes:</strong> A menudo puedes lograr gráficos sofisticados con menos líneas de código.</li>
+                </ul>
+                <p>Piensa en Seaborn como una capa sobre Matplotlib que simplifica la creación de ciertos tipos de gráficos estadísticos y mejora su apariencia.</p>
+                <div class="tip-box">
+                    Por convención, Seaborn se importa con el alias <code>sns</code>. También es común importar Matplotlib para ajustes finos.
+                    <div class="code-block" style="margin-top:10px;"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">seaborn</span> <span class="py-keyword">as</span> <span class="py-module">sns</span>
+<span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span> <span class="py-comment"># A menudo se usa junto con matplotlib</span>
+<span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>    <span class="py-comment"># Para los DataFrames</span></code></pre></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Gráficos de Distribución: histplot(), boxplot(), violinplot() -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🧬</span>
+                <h2 class="card-title">Gráficos de <span class="seaborn-concept">Distribución</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Seaborn sobresale en la visualización de distribuciones de datos.</p>
+                <p><strong><code>sns.histplot(data=df, x='columna', kde=True)</code>:</strong> Similar al histograma de Matplotlib, pero puede añadir una estimación de la densidad del kernel (KDE) para suavizar la distribución.</p>
+                <p><strong><code>sns.boxplot(data=df, x='categoria', y='valor')</code>:</strong> Muestra la distribución de datos numéricos a través de diferentes categorías usando diagramas de caja y bigotes (cuartiles, mediana, valores atípicos).</p>
+                <p><strong><code>sns.violinplot(data=df, x='categoria', y='valor')</code>:</strong> Similar al boxplot, pero también muestra la forma de la distribución (KDE) a cada lado de la caja.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">seaborn</span> <span class="py-keyword">as</span> <span class="py-module">sns</span>
+<span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Datos de ejemplo</span>
+<span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">seed</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span>
+<span class="py-variable">datos_dist</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span>
+    <span class="py-string">'Valor'</span><span class="py-punctuation">:</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">randn</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Categoria'</span><span class="py-punctuation">:</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">choice</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-string">'A'</span><span class="py-punctuation">,</span> <span class="py-string">'B'</span><span class="py-punctuation">,</span> <span class="py-string">'C'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+<span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">12</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">subplot</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">)</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">histplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">datos_dist</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Valor'</span><span class="py-punctuation">,</span> <span class="py-parameter">kde</span><span class="py-operator">=</span><span class="py-boolean-none">True</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Histograma con KDE'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">subplot</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">)</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">boxplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">datos_dist</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Categoria'</span><span class="py-punctuation">,</span> <span class="py-parameter">y</span><span class="py-operator">=</span><span class="py-string">'Valor'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Boxplot por Categoría'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">subplot</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">)</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">violinplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">datos_dist</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Categoria'</span><span class="py-punctuation">,</span> <span class="py-parameter">y</span><span class="py-operator">=</span><span class="py-string">'Valor'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Violinplot por Categoría'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">tight_layout</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Gráficos de Distribución generados (simulados)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder" style="height: 150px;">(Simulación de 3 subplots en una fila)<br/>
+1. Histograma de 'Valor' con curva KDE.<br/>
+2. Boxplots de 'Valor' para cada 'Categoria' (A, B, C).<br/>
+3. Violinplots de 'Valor' para cada 'Categoria' (A, B, C).</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Gráficos Categóricos: countplot() -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">☰</span>
+                <h2 class="card-title">Gráficos Categóricos: <span class="seaborn-concept"><code>countplot()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Para visualizar la frecuencia o el conteo de observaciones en diferentes categorías, <code>sns.countplot()</code> es muy útil. Es como un histograma para datos categóricos.</p>
+                <p>Sintaxis: <code>sns.countplot(data=df, x='columna_categorica')</code> o <code>y='columna_categorica'</code> para barras horizontales.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">seaborn</span> <span class="py-keyword">as</span> <span class="py-module">sns</span>
+<span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+
+<span class="py-variable">data_cat</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'Dia'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'Lunes'</span><span class="py-punctuation">,</span> <span class="py-string">'Martes'</span><span class="py-punctuation">,</span> <span class="py-string">'Lunes'</span><span class="py-punctuation">,</span> <span class="py-string">'Miércoles'</span><span class="py-punctuation">,</span> <span class="py-string">'Lunes'</span><span class="py-punctuation">,</span> <span class="py-string">'Martes'</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-variable">df_cat</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data_cat</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">countplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">df_cat</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Dia'</span><span class="py-punctuation">,</span> <span class="py-parameter">palette</span><span class="py-operator">=</span><span class="py-string">'viridis'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Conteo de Ocurrencias por Día'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">ylabel</span><span class="py-punctuation">(</span><span class="py-string">'Frecuencia'</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Countplot generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Conteo de Ocurrencias por Día (Título)<br/>
+Eje X: Día (Lunes, Martes, Miércoles) | Eje Y: Frecuencia<br/>
+(Barras mostrando conteos: Lunes=3, Martes=2, Miércoles=1. Colores de la paleta 'viridis')</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Parámetros Comunes: hue, palette -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🎨</span>
+                <h2 class="card-title">Parámetros Comunes: <span class="seaborn-concept"><code>hue</code> y <code>palette</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Muchos gráficos de Seaborn aceptan parámetros para añadir dimensiones adicionales de información a través del color y otros atributos visuales.</p>
+                <ul>
+                    <li><strong><code>hue</code></strong>: Toma el nombre de una columna. Los diferentes valores de esta columna se usarán para colorear o diferenciar elementos del gráfico (ej. diferentes barras, puntos, líneas). Esto permite comparar distribuciones o relaciones para diferentes subgrupos.</li>
+                    <li><strong><code>palette</code></strong>: Especifica la paleta de colores a usar cuando se usa <code>hue</code>. Seaborn tiene muchas paletas predefinidas (ej. <code>'viridis'</code>, <code>'coolwarm'</code>, <code>'Set2'</code>, <code>'pastel'</code>).</li>
+                </ul>
+                <p><strong>Ejemplo con <code>boxplot</code> y <code>hue</code>:</strong></p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">seaborn</span> <span class="py-keyword">as</span> <span class="py-module">sns</span>
+<span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Usaremos los datos_dist del paso anterior</span>
+<span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">seed</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span>
+<span class="py-variable">datos_dist</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span>
+    <span class="py-string">'Valor'</span><span class="py-punctuation">:</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">randn</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Categoria'</span><span class="py-punctuation">:</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">choice</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-string">'A'</span><span class="py-punctuation">,</span> <span class="py-string">'B'</span><span class="py-punctuation">,</span> <span class="py-string">'C'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Subgrupo'</span><span class="py-punctuation">:</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-module">random</span><span class="py-punctuation">.</span><span class="py-method">choice</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-string">'S1'</span><span class="py-punctuation">,</span> <span class="py-string">'S2'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+<span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">boxplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">datos_dist</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Categoria'</span><span class="py-punctuation">,</span> <span class="py-parameter">y</span><span class="py-operator">=</span><span class="py-string">'Valor'</span><span class="py-punctuation">,</span> <span class="py-parameter">hue</span><span class="py-operator">=</span><span class="py-string">'Subgrupo'</span><span class="py-punctuation">,</span> <span class="py-parameter">palette</span><span class="py-operator">=</span><span class="py-string">'pastel'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Boxplot por Categoría y Subgrupo'</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Boxplot con 'hue' generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Boxplot por Categoría y Subgrupo (Título)<br/>
+Eje X: Categoría (A, B, C) | Eje Y: Valor<br/>
+(Para cada categoría, dos boxplots lado a lado, uno para Subgrupo S1 y otro para S2, con colores pastel)</div>
+                <p>Otros parámetros comunes son <code>data</code> (el DataFrame), <code>x</code> (columna para el eje x), <code>y</code> (columna para el eje y).</p>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Introducción a Seaborn</h2>
+            </div>
+            <div class="card-content">
+                <p>Seaborn simplifica la creación de gráficos estadísticos atractivos.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🌟</span>
+                        <strong>¿Qué es Seaborn?</strong><br>
+                        Librería de visualización estadística sobre Matplotlib.
+                        <code>import seaborn as sns</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🐼</span>
+                        <strong>Integración Pandas</strong><br>
+                        Funciona directamente con DataFrames.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🧬</span>
+                        <strong><code>histplot</code></strong><br>
+                        Histogramas (con KDE opcional).
+                        <code>sns.histplot(data, x, kde)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🎻</span>
+                        <strong><code>boxplot</code> / <code>violinplot</code></strong><br>
+                        Distribuciones por categoría.
+                        <code>sns.boxplot(data, x, y)</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">☰</span>
+                        <strong><code>countplot</code></strong><br>
+                        Frecuencia de categorías.
+                        <code>sns.countplot(data, x)</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🎨</span>
+                        <strong><code>hue</code> / <code>palette</code></strong><br>
+                        Añade otra dimensión con color.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Parámetros</strong><br>
+                        <code>data</code>, <code>x</code>, <code>y</code> son comunes para especificar datos y ejes.
+                    </div>
+                </div>
+                <p>Recuerda que Seaborn usa Matplotlib por debajo, así que puedes usar funciones de <code>plt</code> (como <code>plt.title()</code>) para personalizar aún más.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Semana Completada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Felicidades, has completado todos los modulos de la semana 4 correspondiente a la introducción de Matplotlib!</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¡Tu Aventura con Python continua!</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora tienes una base sólida en Matplotlib para graficar y visualizar datos tabulares. Este es el cierre de la unidad 1, dando paso a la unidad 2 donde nos adentraremos en el mundo del Machine Learning.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                    <p>¡Sigamos avanzando con el diplomado!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Visualización ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Subplots y Organización de Figuras en Matplotlib</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🖼️'; /* Icono para Subplots (cuadro con múltiples vistas) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .matplotlib-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        .plot-placeholder { 
+            width: 100%;
+            min-height: 200px; 
+            background-color: #f0f0f0;
+            border: 1px dashed #ccc;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-style: italic;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Matplotlib)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* plt.subplot, plt.subplots, fig.tight_layout, etc. */
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida / Gráfico (Simulado)'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Subplots y Organización de Figuras</h1>
+            <p>Crea visualizaciones complejas con múltiples gráficos en Matplotlib</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Por qué Usar Subplots? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🧩</span>
+                <h2 class="card-title">¿Por qué Múltiples Gráficos (<span class="matplotlib-concept">Subplots</span>)?</h2>
+            </div>
+            <div class="card-content">
+                <p>A menudo, necesitas mostrar <span class="highlight">múltiples gráficos relacionados</span> en una sola figura para comparar diferentes aspectos de tus datos, mostrar diferentes variables, o presentar una historia visual más completa.</p>
+                <p>Matplotlib te permite crear una figura que contenga una cuadrícula de "subgráficos" (llamados <strong>Axes</strong> en la terminología de Matplotlib). Cada subgráfico puede tener su propio tipo de gráfico, datos y personalizaciones.</p>
+                <p>Esto es fundamental para:</p>
+                <ul>
+                    <li>Comparar tendencias entre diferentes conjuntos de datos.</li>
+                    <li>Mostrar diferentes vistas de los mismos datos (ej. datos crudos vs. datos suavizados).</li>
+                    <li>Crear dashboards o informes visuales compactos.</li>
+                </ul>
+                <p>La forma más común y flexible de trabajar con subplots es usando la interfaz orientada a objetos de Matplotlib.</p>
+            </div>
+        </div>
+
+        <!-- Paso 2: Creando Subplots con plt.subplots() -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🖼️</span>
+                <h2 class="card-title">Creando Subplots: <span class="matplotlib-concept"><code>plt.subplots()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>La función <code>plt.subplots(nrows, ncols)</code> es la forma recomendada para crear una figura y un conjunto de subplots (ejes) en una cuadrícula.</p>
+                <ul>
+                    <li><code>nrows</code>: Número de filas de subplots.</li>
+                    <li><code>ncols</code>: Número de columnas de subplots.</li>
+                </ul>
+                <p>Devuelve dos objetos:</p>
+                <ol>
+                    <li>Un objeto <code>Figure</code> (<code>fig</code>): El lienzo completo donde se dibujarán todos los subplots.</li>
+                    <li>Un array de objetos <code>Axes</code> (<code>ax</code> o <code>axes</code>): Cada elemento de este array representa un subgráfico individual.
+                        <ul>
+                            <li>Si creas un solo subplot (ej. <code>plt.subplots(1,1)</code>, que es lo mismo que <code>plt.subplots()</code>), <code>ax</code> será un solo objeto Axes.</li>
+                            <li>Si creas múltiples subplots (ej. <code>plt.subplots(2,2)</code>), <code>axes</code> será un array NumPy 2D de objetos Axes.</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p>Una vez que tienes un objeto <code>Axes</code> (ej. <code>ax</code>), usas sus métodos para dibujar en él (ej. <code>ax.plot()</code>, <code>ax.set_title()</code>) en lugar de las funciones globales de <code>plt</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Crear una figura con 2 filas y 1 columna de subplots</span>
+<span class="py-variable">fig</span><span class="py-punctuation">,</span> <span class="py-variable">axes</span> <span class="py-operator">=</span> <span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">subplots</span><span class="py-punctuation">(</span><span class="py-parameter">nrows</span><span class="py-operator">=</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-parameter">ncols</span><span class="py-operator">=</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">6</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span> <span class="py-comment"># axes será un array de 2 Axes</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">linspace</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Graficar en el primer subplot (axes[0])</span>
+<span class="py-variable">axes</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sin</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'blue'</span><span class="py-punctuation">)</span>
+<span class="py-variable">axes</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-string">'Función Seno'</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Graficar en el segundo subplot (axes[1])</span>
+<span class="py-variable">axes</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">cos</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'red'</span><span class="py-punctuation">)</span>
+<span class="py-variable">axes</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-string">'Función Coseno'</span><span class="py-punctuation">)</span>
+<span class="py-variable">axes</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">set_xlabel</span><span class="py-punctuation">(</span><span class="py-string">'X'</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">tight_layout</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Ajusta el espaciado para evitar superposiciones</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Figura con 2 subplots generada (simulada)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder" style="height: 300px;">Figura con 2 Subplots (2 filas, 1 columna)<br/>
+--- Subplot 1 (Superior) ---<br/>
+Título: Función Seno<br/>
+(Gráfico de línea azul de la función seno)<br/>
+--- Subplot 2 (Inferior) ---<br/>
+Título: Función Coseno<br/>
+Eje X: X<br/>
+(Gráfico de línea roja de la función coseno)</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Iterando para Generar Múltiples Subgráficos -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🔄</span>
+                <h2 class="card-title">Iteración para <span class="matplotlib-concept">Múltiples Subgráficos</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Cuando tienes una cuadrícula de subplots (ej. 2x2, 3x2), <code>plt.subplots()</code> devuelve un array 2D de objetos <code>Axes</code>. Puedes iterar sobre este array para graficar en cada subgráfico.</p>
+                <p>Si el array de <code>Axes</code> es 1D (ej. <code>plt.subplots(3,1)</code>), puedes iterar directamente. Si es 2D, puedes usar bucles anidados o el método <code>.flatten()</code> para convertirlo en 1D y luego iterar.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Crear una figura 2x2</span>
+<span class="py-variable">fig</span><span class="py-punctuation">,</span> <span class="py-variable">axes</span> <span class="py-operator">=</span> <span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">subplots</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span> <span class="py-comment"># axes es un array 2x2 de Axes</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">linspace</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">50</span><span class="py-punctuation">)</span>
+<span class="py-variable">colores</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">'blue'</span><span class="py-punctuation">,</span> <span class="py-string">'green'</span><span class="py-punctuation">,</span> <span class="py-string">'red'</span><span class="py-punctuation">,</span> <span class="py-string">'purple'</span><span class="py-punctuation">]</span>
+<span class="py-variable">funciones</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sin</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">cos</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">tan</span><span class="py-punctuation">,</span> <span class="py-keyword">lambda</span> <span class="py-parameter">val</span><span class="py-punctuation">:</span> <span class="py-parameter">val</span><span class="py-operator">**</span><span class="py-number">2</span><span class="py-punctuation">]</span>
+<span class="py-variable">titulos</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">'Seno'</span><span class="py-punctuation">,</span> <span class="py-string">'Coseno'</span><span class="py-punctuation">,</span> <span class="py-string">'Tangente'</span><span class="py-punctuation">,</span> <span class="py-string">'Cuadrado'</span><span class="py-punctuation">]</span>
+
+<span class="py-keyword">for</span> <span class="py-variable">i</span><span class="py-punctuation">,</span> <span class="py-variable">ax</span> <span class="py-keyword">in</span> <span class="py-builtin">enumerate</span><span class="py-punctuation">(</span><span class="py-variable">axes</span><span class="py-punctuation">.</span><span class="py-method">flatten</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span> <span class="py-comment"># Aplanar el array 2D de Axes a 1D</span>
+    <span class="py-variable">ax</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">funciones</span><span class="py-punctuation">[</span><span class="py-variable">i</span><span class="py-punctuation">]</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-variable">colores</span><span class="py-punctuation">[</span><span class="py-variable">i</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+    <span class="py-variable">ax</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-variable">titulos</span><span class="py-punctuation">[</span><span class="py-variable">i</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+    <span class="py-keyword">if</span> <span class="py-variable">i</span> <span class="py-operator">&gt;=</span> <span class="py-number">2</span><span class="py-punctuation">:</span> <span class="py-comment"># Añadir etiqueta X a la fila inferior</span>
+        <span class="py-variable">ax</span><span class="py-punctuation">.</span><span class="py-method">set_xlabel</span><span class="py-punctuation">(</span><span class="py-string">'x'</span><span class="py-punctuation">)</span>
+    <span class="py-keyword">if</span> <span class="py-variable">i</span> <span class="py-operator">%</span> <span class="py-number">2</span> <span class="py-operator">==</span> <span class="py-number">0</span><span class="py-punctuation">:</span> <span class="py-comment"># Añadir etiqueta Y a la columna izquierda</span>
+        <span class="py-variable">ax</span><span class="py-punctuation">.</span><span class="py-method">set_ylabel</span><span class="py-punctuation">(</span><span class="py-string">'y'</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">suptitle</span><span class="py-punctuation">(</span><span class="py-string">'Múltiples Funciones en Subplots'</span><span class="py-punctuation">,</span> <span class="py-parameter">fontsize</span><span class="py-operator">=</span><span class="py-number">16</span><span class="py-punctuation">)</span> <span class="py-comment"># Título para toda la figura</span>
+<span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">tight_layout</span><span class="py-punctuation">(</span><span class="py-parameter">rect</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">0.96</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Ajustar para dejar espacio al supertítulo</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Figura 2x2 con iteración generada (simulada)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder" style="height: 350px;">Múltiples Funciones en Subplots (Supertítulo)<br/>
+--- Cuadrícula 2x2 ---<br/>
+(0,0) Seno (azul), (0,1) Coseno (verde)<br/>
+(1,0) Tangente (rojo), (1,1) Cuadrado (púrpura)<br/>
+Etiquetas X en fila inferior, Etiquetas Y en columna izquierda.</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Ajuste de Espacio y Gridspec -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">📏</span>
+                <h2 class="card-title">Ajuste de Espacio y <span class="matplotlib-concept"><code>Gridspec</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Ajuste Automático con <code>fig.tight_layout()</code>:</strong></p>
+                <p>Cuando tienes múltiples subplots con títulos, etiquetas, etc., a veces se superponen. La función <code>fig.tight_layout()</code> ajusta automáticamente los parámetros de los subplots para dar un "ajuste apretado" y evitar superposiciones.</p>
+                <p>A menudo se llama justo antes de <code>plt.show()</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># ... código para crear fig y axes ...</span>
+<span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">tight_layout</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> 
+<span class="py-comment"># plt.show()</span></code></pre></div>
+
+                <p><strong>Control Más Fino con <code>GridSpec</code>:</strong></p>
+                <p>Para diseños de subplots más complejos (ej. un subplot que ocupe varias celdas de la cuadrícula), puedes usar <code>matplotlib.gridspec.GridSpec</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">matplotlib.gridspec</span> <span class="py-keyword">as</span> <span class="py-module">gridspec</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">fig</span> <span class="py-operator">=</span> <span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-variable">gs</span> <span class="py-operator">=</span> <span class="py-module">gridspec</span><span class="py-punctuation">.</span><span class="py-method">GridSpec</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-parameter">width_ratios</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-parameter">height_ratios</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">ax1</span> <span class="py-operator">=</span> <span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">add_subplot</span><span class="py-punctuation">(</span><span class="py-variable">gs</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-punctuation">:</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Ocupa toda la primera fila</span>
+<span class="py-variable">ax1</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-variable">ax1</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-string">'Gráfico Superior Ancho'</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">ax2</span> <span class="py-operator">=</span> <span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">add_subplot</span><span class="py-punctuation">(</span><span class="py-variable">gs</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Segunda fila, primera columna (más ancha)</span>
+<span class="py-variable">ax2</span><span class="py-punctuation">.</span><span class="py-method">hist</span><span class="py-punctuation">(</span><span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">randn</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-parameter">bins</span><span class="py-operator">=</span><span class="py-number">10</span><span class="py-punctuation">)</span>
+<span class="py-variable">ax2</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-string">'Histograma'</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">ax3</span> <span class="py-operator">=</span> <span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">add_subplot</span><span class="py-punctuation">(</span><span class="py-variable">gs</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Segunda fila, segunda columna</span>
+<span class="py-variable">ax3</span><span class="py-punctuation">.</span><span class="py-method">scatter</span><span class="py-punctuation">(</span><span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">10</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-variable">ax3</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-string">'Dispersión'</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">fig</span><span class="py-punctuation">.</span><span class="py-method">tight_layout</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Figura con Gridspec generada (simulada)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder" style="height: 350px;">Figura con Diseño GridSpec<br/>
+--- Gráfico Superior Ancho (ocupa 2 columnas en fila 0) ---<br/>
+(Gráfico de línea aleatorio)<br/>
+--- Fila Inferior ---<br/>
+(Col Izquierda, más ancha) Histograma | (Col Derecha) Dispersión</div>
+                <div class="tip-box"><code>Gridspec</code> es más avanzado pero ofrece control total sobre la disposición de subplots de diferentes tamaños y proporciones.</div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Subplots y Organización</h2>
+            </div>
+            <div class="card-content">
+                <p>Organizar múltiples gráficos en una figura te permite contar historias más completas con tus datos.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🧩</span>
+                        <strong>¿Por qué Subplots?</strong><br>
+                        Comparar, mostrar múltiples vistas, dashboards.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🖼️</span>
+                        <strong><code>plt.subplots()</code></strong><br>
+                        Crea figura y array de Ejes (<code>Axes</code>).
+                        <code>fig, ax = plt.subplots()</code>
+                        <code>fig, axes = plt.subplots(2,2)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">✍️</span>
+                        <strong>Interfaz OO</strong><br>
+                        Usa métodos de <code>ax</code>:
+                        <code>ax.plot()</code>, <code>ax.set_title()</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔄</span>
+                        <strong>Iterar Subplots</strong><br>
+                        Usa bucles <code>for</code> con <code>axes.flatten()</code> para rellenar cuadrículas.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📏</span>
+                        <strong><code>fig.tight_layout()</code></strong><br>
+                        Ajusta espaciado automáticamente.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📐</span>
+                        <strong><code>GridSpec</code></strong><br>
+                        Control avanzado sobre la disposición de subplots.
+                    </div>
+                </div>
+                <p>La interfaz orientada a objetos (<code>fig</code>, <code>ax</code>) es la clave para manejar subplots de manera efectiva.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Organización de Figuras Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ahora puedes crear figuras con múltiples subgráficos y controlar su disposición.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El próximo módulo te introducirá a <strong>Seaborn</strong>, una librería de visualización construida sobre Matplotlib que facilita la creación de gráficos estadísticos atractivos y complejos con menos código.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Matplotlib ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

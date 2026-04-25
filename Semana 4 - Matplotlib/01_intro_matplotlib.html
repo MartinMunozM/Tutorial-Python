@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Introducción a Matplotlib</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '📊'; /* Icono para Matplotlib (gráfico de barras) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .matplotlib-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        .plot-placeholder { /* Para simular gráficos */
+            width: 100%;
+            height: 250px;
+            background-color: #f0f0f0;
+            border: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-style: italic;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Matplotlib)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } /* import, as */
+        .code-block .py-builtin { color: #4EC9B0; } /* print */
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* plt.plot, plt.show, fig.add_subplot, etc. */
+        .code-block .py-module { color: #4EC9B0; } /* matplotlib.pyplot (plt), numpy (np) */
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida / Gráfico (Simulado)'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Introducción a Matplotlib</h1>
+            <p>Aprende a crear tus primeras visualizaciones de datos en Python</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué es Matplotlib y por qué se usa? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🎨</span>
+                <h2 class="card-title">¿Qué es <span class="matplotlib-concept">Matplotlib</span>?</h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Matplotlib</strong> es una librería de Python muy popular y completa para crear visualizaciones estáticas, animadas e interactivas.</p>
+                <p>Es la base de muchas otras librerías de visualización en Python (como Seaborn, que veremos más adelante) y ofrece un control detallado sobre cada aspecto de un gráfico.</p>
+                <p><strong>¿Por qué usar Matplotlib?</strong></p>
+                <ul>
+                    <li><strong>Versatilidad:</strong> Permite crear una amplia gama de gráficos: líneas, barras, histogramas, dispersión, etc.</li>
+                    <li><strong>Personalización:</strong> Ofrece un control granular sobre casi todos los elementos de un gráfico (colores, etiquetas, fuentes, leyendas, etc.).</li>
+                    <li><strong>Integración:</strong> Funciona muy bien con NumPy, Pandas y el ecosistema científico de Python.</li>
+                    <li><strong>Calidad de Publicación:</strong> Puede generar gráficos de alta calidad adecuados para publicaciones e informes.</li>
+                </ul>
+                <p>El módulo más comúnmente usado de Matplotlib es <code>pyplot</code>, que proporciona una interfaz similar a MATLAB para crear gráficos.</p>
+                <div class="tip-box">
+                    Por convención, <code>matplotlib.pyplot</code> se importa con el alias <code>plt</code>:
+                    <div class="code-block" style="margin-top:10px;"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span></code></pre></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: pyplot vs. Figure/Axes (Interfaz Orientada a Objetos) -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🖼️</span>
+                <h2 class="card-title">Dos Enfoques: <span class="matplotlib-concept"><code>pyplot</code> vs. Figura/Ejes</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Hay dos formas principales de usar Matplotlib:</p>
+                <ol>
+                    <li><strong>Interfaz <code>pyplot</code> (estilo MATLAB):</strong>
+                        <ul>
+                            <li>Es una colección de funciones que operan sobre una figura y ejes "globales" o actuales.</li>
+                            <li>Es más rápido para gráficos simples y exploración rápida.</li>
+                            <li>Ejemplo: <code>plt.plot(...)</code>, <code>plt.title(...)</code>.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Interfaz Orientada a Objetos (OO):</strong>
+                        <ul>
+                            <li>Se crean explícitamente objetos <code>Figure</code> (la ventana o lienzo completo) y <code>Axes</code> (los subgráficos individuales donde se dibujan los datos).</li>
+                            <li>Ofrece más control y flexibilidad, especialmente para gráficos complejos o múltiples subplots.</li>
+                            <li>Ejemplo: <code>fig, ax = plt.subplots()</code>, luego <code>ax.plot(...)</code>, <code>ax.set_title(...)</code>.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>Para empezar, la interfaz <code>pyplot</code> es más sencilla. A medida que necesites más control, la interfaz OO se vuelve más útil.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Datos de ejemplo</span>
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">y</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Enfoque pyplot</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Opcional, crea una nueva figura</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico con pyplot"</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show() # Mostraría el gráfico</span>
+
+<span class="py-comment"># Enfoque Orientado a Objetos</span>
+<span class="py-variable">fig</span><span class="py-punctuation">,</span> <span class="py-variable">ax</span> <span class="py-operator">=</span> <span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">subplots</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Crea una figura y un conjunto de ejes</span>
+<span class="py-variable">ax</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y</span><span class="py-punctuation">)</span>
+<span class="py-variable">ax</span><span class="py-punctuation">.</span><span class="py-method">set_title</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico con Figura y Ejes"</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show() # Mostraría este otro gráfico</span></code></pre></div>
+                <p>Ambos enfoques producen resultados similares para gráficos simples. La interfaz OO es generalmente recomendada para scripts y aplicaciones más grandes.</p>
+            </div>
+        </div>
+
+        <!-- Paso 3: Creación de Gráficos de Líneas con plot() -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">📈</span>
+                <h2 class="card-title">Gráficos de Líneas: <span class="matplotlib-concept"><code>plt.plot()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>La función más básica para crear gráficos es <code>plt.plot()</code>. Por defecto, si le pasas una sola secuencia de números, los tomará como los valores del eje Y y generará automáticamente los valores del eje X (0, 1, 2...).</p>
+                <p>Si pasas dos secuencias, la primera se usa para el eje X y la segunda para el eje Y.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">y_valores</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Crea una nueva figura para el gráfico</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">y_valores</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico de Línea Simple (solo Y)"</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show() # En un script real, esto mostraría el gráfico</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico 1 (solo Y) generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Gráfico de Línea Simple (solo Y)
+(Línea conectando puntos en Y: 3, 8, 1, 10, 5 con X: 0, 1, 2, 3, 4)</div>
+                
+                <p>Con valores X e Y:</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-variable">x_valores</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">y_valores_2</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">(</span><span class="py-punctuation">[</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">7</span><span class="py-punctuation">,</span> <span class="py-number">11</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span> <span class="py-comment"># Números primos</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Otra figura</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x_valores</span><span class="py-punctuation">,</span> <span class="py-variable">y_valores_2</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico de Línea con X e Y"</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nGráfico 2 (X e Y) generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                 <div class="plot-placeholder">Gráfico de Línea con X e Y
+(Línea conectando (1,2), (2,3), (3,5), (4,7), (5,11))</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Mostrando Gráficos y Personalización Básica -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🖥️</span>
+                <h2 class="card-title">Mostrar Gráficos y <span class="matplotlib-concept">Personalización</span></h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Mostrando Gráficos con <code>plt.show()</code>:</strong></p>
+                <p>Después de definir tu gráfico (o gráficos) usando funciones de <code>pyplot</code>, necesitas llamar a <code>plt.show()</code> para que realmente se muestren en una ventana.</p>
+                <p>En entornos como Jupyter Notebooks, a veces los gráficos se muestran automáticamente después de la celda que los genera (gracias a "magias" como <code>%matplotlib inline</code>). Sin embargo, en scripts de Python (.py), <code>plt.show()</code> es esencial.</p>
+                <div class="warning-box">En este tutorial interactivo web, no podemos ejecutar <code>plt.show()</code> para mostrar ventanas emergentes. Usaremos marcadores de posición para simular la apariencia de los gráficos.</div>
+
+                <p><strong>Personalización Básica: Color y Estilo de Línea</strong></p>
+                <p>La función <code>plt.plot()</code> acepta argumentos adicionales para personalizar la apariencia. Los más comunes son:</p>
+                <ul>
+                    <li><strong><code>color</code></strong>: Especifica el color de la línea (ej. <code>'red'</code>, <code>'blue'</code>, <code>'g'</code> para verde, <code>'#FF5733'</code> para un color hexadecimal).</li>
+                    <li><strong><code>linestyle</code></strong> (o <code>ls</code>): Define el estilo de la línea (ej. <code>'-'</code> para sólida (default), <code>'--'</code> para discontinua, <code>':'</code> para punteada, <code>'-.'</code> para guion-punto).</li>
+                    <li><strong><code>linewidth</code></strong> (o <code>lw</code>): Grosor de la línea.</li>
+                    <li><strong><code>marker</code></strong>: Estilo del marcador para cada punto de datos (ej. <code>'o'</code> para círculo, <code>'.'</code> para punto, <code>'*'</code> para estrella, <code>'s'</code> para cuadrado).</li>
+                </ul>
+                <p>También puedes usar un <span class="highlight">formato de cadena abreviado</span> que combina color, marcador y estilo de línea (ej. <code>'ro-'</code> para rojo, círculo, línea sólida).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">linspace</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span> <span class="py-comment"># 100 puntos entre 0 y 10</span>
+<span class="py-variable">y1</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sin</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span>
+<span class="py-variable">y2</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">cos</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span> <span class="py-comment"># Opcional: tamaño de la figura</span>
+
+<span class="py-comment"># Graficar y1 con línea roja discontinua y marcadores 'o'</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y1</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'red'</span><span class="py-punctuation">,</span> <span class="py-parameter">linestyle</span><span class="py-operator">=</span><span class="py-string">'--'</span><span class="py-punctuation">,</span> <span class="py-parameter">marker</span><span class="py-operator">=</span><span class="py-string">'o'</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Seno'</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Graficar y2 con formato abreviado: línea azul punteada con estrellas</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y2</span><span class="py-punctuation">,</span> <span class="py-string">'b:*'</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Coseno'</span><span class="py-punctuation">)</span> <span class="py-comment"># b: blue, :: dotted, *: star marker</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Funciones Seno y Coseno"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">xlabel</span><span class="py-punctuation">(</span><span class="py-string">"Eje X"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">ylabel</span><span class="py-punctuation">(</span><span class="py-string">"Eje Y"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">legend</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span> <span class="py-comment"># Muestra la leyenda (usa los 'label' de plot)</span>
+<span class="py-comment"># plt.grid(True) # Opcional: añade una cuadrícula</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico personalizado generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Funciones Seno y Coseno
+(Seno: línea roja discontinua con círculos)
+(Coseno: línea azul punteada con estrellas)
+Etiquetas X, Y y Leyenda presentes.</div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Introducción a Matplotlib</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has dado tus primeros pasos en la visualización de datos con Matplotlib!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🎨</span>
+                        <strong>¿Qué es?</strong><br>
+                        Librería para visualización en Python.
+                        <code>import matplotlib.pyplot as plt</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🖼️</span>
+                        <strong>Dos Enfoques</strong><br>
+                        <code>pyplot</code> (simple) y Figura/Ejes (OO, más control).
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📈</span>
+                        <strong><code>plt.plot()</code></strong><br>
+                        Crea gráficos de líneas.
+                        <code>plt.plot(x, y)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🖥️</span>
+                        <strong><code>plt.show()</code></strong><br>
+                        Muestra los gráficos generados.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🖌️</span>
+                        <strong>Personalización</strong><br>
+                        <code>color</code>, <code>linestyle</code>, <code>marker</code>, <code>linewidth</code>.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🏷️</span>
+                        <strong>Elementos del Gráfico</strong><br>
+                        <code>plt.title()</code>, <code>plt.xlabel()</code>, <code>plt.ylabel()</code>, <code>plt.legend()</code>.
+                    </div>
+                </div>
+                <p>Matplotlib es una herramienta increíblemente flexible. En los próximos módulos, exploraremos más opciones de personalización y diferentes tipos de gráficos.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Introducción a Matplotlib Completada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ya puedes crear y mostrar gráficos de líneas básicos, y entiendes la estructura fundamental de Matplotlib.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El próximo módulo se centrará en la <strong>Personalización de Gráficos</strong>, donde aprenderás a controlar títulos, etiquetas, leyendas, colores, estilos y mucho más para hacer tus visualizaciones más informativas y atractivas.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Matplotlib ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

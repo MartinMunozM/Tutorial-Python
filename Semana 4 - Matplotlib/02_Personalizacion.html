@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Personalización de Gráficos en Matplotlib</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🖌️'; /* Icono para Personalización (pincel) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .matplotlib-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        .plot-placeholder { 
+            width: 100%;
+            height: 250px;
+            background-color: #f0f0f0;
+            border: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-style: italic;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Matplotlib)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } /* color, linestyle, label, etc. */
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} 
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida / Gráfico (Simulado)'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Personalización de Gráficos en Matplotlib</h1>
+            <p>Enriquece tus visualizaciones con etiquetas, leyendas y estilos</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Títulos y Etiquetas de Ejes -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🏷️</span>
+                <h2 class="card-title">Títulos y Etiquetas (<span class="matplotlib-concept"><code>title</code>, <code>xlabel</code>, <code>ylabel</code></span>)</h2>
+            </div>
+            <div class="card-content">
+                <p>Un gráfico sin contexto es difícil de entender. Es crucial añadir un título al gráfico y etiquetas a los ejes X e Y para describir qué representan los datos.</p>
+                <p>En la interfaz <code>pyplot</code>, usamos:</p>
+                <ul>
+                    <li><strong><code>plt.title("Mi Título Increíble")</code></strong>: Añade un título principal al gráfico.</li>
+                    <li><strong><code>plt.xlabel("Etiqueta del Eje X")</code></strong>: Etiqueta el eje horizontal.</li>
+                    <li><strong><code>plt.ylabel("Etiqueta del Eje Y")</code></strong>: Etiqueta el eje vertical.</li>
+                </ul>
+                <p>Puedes personalizar la fuente, tamaño y color de estos textos con argumentos adicionales (ej. <code>fontsize=14</code>, <code>color='blue'</code>).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">linspace</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">2</span> <span class="py-operator">*</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">pi</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+<span class="py-variable">y</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sin</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Función Seno"</span><span class="py-punctuation">,</span> <span class="py-parameter">fontsize</span><span class="py-operator">=</span><span class="py-number">16</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'darkblue'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">xlabel</span><span class="py-punctuation">(</span><span class="py-string">"Ángulo (radianes)"</span><span class="py-punctuation">,</span> <span class="py-parameter">fontsize</span><span class="py-operator">=</span><span class="py-number">12</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">ylabel</span><span class="py-punctuation">(</span><span class="py-string">"Valor del Seno"</span><span class="py-punctuation">,</span> <span class="py-parameter">fontsize</span><span class="py-operator">=</span><span class="py-number">12</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># plt.show() # Para mostrar el gráfico</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico con Título y Etiquetas generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Función Seno (Título, Azul Oscuro, Tamaño 16)<br/>
+Eje X: Ángulo (radianes) (Tamaño 12)<br/>
+Eje Y: Valor del Seno (Tamaño 12)<br/>
+(Gráfico de la función seno de 0 a 2π)</div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Añadiendo Leyendas -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🔖</span>
+                <h2 class="card-title">Añadiendo Leyendas con <span class="matplotlib-concept"><code>legend()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Cuando graficas múltiples líneas o conjuntos de datos en un mismo gráfico, una <strong>leyenda</strong> es esencial para identificar qué representa cada uno.</p>
+                <p>Para crear una leyenda:</p>
+                <ol>
+                    <li>Añade el argumento <code>label="Nombre de la Serie"</code> a cada llamada de <code>plt.plot()</code> (o función de graficación similar).</li>
+                    <li>Llama a <code>plt.legend()</code> después de todas las funciones de graficación.</li>
+                </ol>
+                <p><code>plt.legend()</code> tiene parámetros para controlar la posición (<code>loc</code>), el tamaño de la fuente, etc.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">linspace</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">50</span><span class="py-punctuation">)</span>
+<span class="py-variable">y_cuadrado</span> <span class="py-operator">=</span> <span class="py-variable">x</span> <span class="py-operator">**</span> <span class="py-number">2</span>
+<span class="py-variable">y_cubo</span> <span class="py-operator">=</span> <span class="py-variable">x</span> <span class="py-operator">**</span> <span class="py-number">3</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y_cuadrado</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'x^2 (Cuadrado)'</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'blue'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y_cubo</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'x^3 (Cubo)'</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'red'</span><span class="py-punctuation">,</span> <span class="py-parameter">linestyle</span><span class="py-operator">=</span><span class="py-string">'--'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Funciones Potenciales"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">xlabel</span><span class="py-punctuation">(</span><span class="py-string">"Base x"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">ylabel</span><span class="py-punctuation">(</span><span class="py-string">"Resultado Potencia"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">legend</span><span class="py-punctuation">(</span><span class="py-parameter">loc</span><span class="py-operator">=</span><span class="py-string">'upper left'</span><span class="py-punctuation">)</span> <span class="py-comment"># Ubicación de la leyenda</span>
+
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico con Leyenda generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Funciones Potenciales (Título)<br/>
+Eje X: Base x | Eje Y: Resultado Potencia<br/>
+(Línea azul para x^2, Línea roja discontinua para x^3)<br/>
+Leyenda en la esquina superior izquierda mostrando 'x^2 (Cuadrado)' y 'x^3 (Cubo)'.</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Más sobre Colores, Estilos de Línea y Marcadores -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🎨</span>
+                <h2 class="card-title">Colores, Estilos y <span class="matplotlib-concept">Marcadores</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Ya vimos brevemente cómo cambiar el color, estilo de línea y marcadores. Matplotlib ofrece una gran variedad de opciones.</p>
+                <p><strong>Colores Comunes:</strong></p>
+                <ul>
+                    <li>Nombres: <code>'blue'</code>, <code>'green'</code>, <code>'red'</code>, <code>'cyan'</code>, <code>'magenta'</code>, <code>'yellow'</code>, <code>'black'</code>, <code>'white'</code>.</li>
+                    <li>Abreviaturas: <code>'b'</code>, <code>'g'</code>, <code>'r'</code>, <code>'c'</code>, <code>'m'</code>, <code>'y'</code>, <code>'k'</code>, <code>'w'</code>.</li>
+                    <li>Valores hexadecimales RGB: <code>'#RRGGBB'</code> (ej. <code>'#FF5733'</code>).</li>
+                    <li>Tuplas RGB/RGBA: <code>(R, G, B)</code> o <code>(R, G, B, A)</code> con valores entre 0 y 1.</li>
+                </ul>
+                <p><strong>Estilos de Línea Comunes (<code>linestyle</code> o <code>ls</code>):</strong></p>
+                <ul>
+                    <li><code>'-'</code> o <code>'solid'</code> (sólida)</li>
+                    <li><code>'--'</code> o <code>'dashed'</code> (discontinua)</li>
+                    <li><code>':'</code> o <code>'dotted'</code> (punteada)</li>
+                    <li><code>'-.'</code> o <code>'dashdot'</code> (guion-punto)</li>
+                    <li><code>'None'</code> o <code>''</code> (sin línea, solo marcadores si se especifican)</li>
+                </ul>
+                <p><strong>Marcadores Comunes (<code>marker</code>):</strong></p>
+                <ul>
+                    <li><code>'.'</code> (punto), <code>','</code> (pixel)</li>
+                    <li><code>'o'</code> (círculo), <code>'v'</code> (triángulo abajo), <code>'^'</code> (triángulo arriba)</li>
+                    <li><code>'s'</code> (cuadrado), <code>'p'</code> (pentágono), <code>'*'</code> (estrella), <code>'+'</code> (más), <code>'x'</code> (equis)</li>
+                    <li><code>'D'</code> (diamante), <code>'d'</code> (diamante delgado)</li>
+                </ul>
+                 <p>También puedes controlar el tamaño del marcador (<code>markersize</code>), el color del borde del marcador (<code>markeredgecolor</code>), y el color de relleno del marcador (<code>markerfacecolor</code>).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">arange</span><span class="py-punctuation">(</span><span class="py-number">5</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">x</span><span class="py-operator">+</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'green'</span><span class="py-punctuation">,</span> <span class="py-parameter">linestyle</span><span class="py-operator">=</span><span class="py-string">':'</span><span class="py-punctuation">,</span> <span class="py-parameter">marker</span><span class="py-operator">=</span><span class="py-string">'s'</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Verde Punteado Cuadrado'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">x</span><span class="py-operator">+</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-string">'m--*'</span><span class="py-punctuation">,</span> <span class="py-parameter">linewidth</span><span class="py-operator">=</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-parameter">markersize</span><span class="py-operator">=</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Magenta Discontinua Estrella'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">x</span><span class="py-operator">+</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'#FFC300'</span><span class="py-punctuation">,</span> <span class="py-parameter">linestyle</span><span class="py-operator">=</span><span class="py-string">'-.'</span><span class="py-punctuation">,</span> <span class="py-parameter">marker</span><span class="py-operator">=</span><span class="py-string">'.'</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Amarillo GuionPunto Punto'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">legend</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show()</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico con múltiples estilos generado (simulado)."</span><span class="py-punctuation">)</span></code></pre></div>
+                <div class="plot-placeholder">Gráfico con tres líneas:
+1. Verde punteada con marcadores cuadrados.
+2. Magenta discontinua gruesa con marcadores de estrella grandes.
+3. Amarilla (hex #FFC300) guion-punto con marcadores de punto.
+Leyenda visible.</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Guardando Figuras -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">💾</span>
+                <h2 class="card-title">Guardando Figuras: <span class="matplotlib-concept"><code>savefig()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una vez que has creado un gráfico, querrás guardarlo en un archivo para usarlo en informes, presentaciones, o en la web.</p>
+                <p>Matplotlib usa la función <code>plt.savefig()</code> para esto.</p>
+                <p>Sintaxis: <code>plt.savefig('nombre_del_archivo.extension', dpi=300, bbox_inches='tight')</code></p>
+                <ul>
+                    <li>El primer argumento es el nombre del archivo y su extensión (ej. <code>.png</code>, <code>.jpg</code>, <code>.pdf</code>, <code>.svg</code>). Matplotlib infiere el formato a partir de la extensión.</li>
+                    <li><strong><code>dpi</code></strong> (dots per inch): Controla la resolución de la imagen (para formatos raster como PNG, JPG). Valores más altos significan mayor resolución.</li>
+                    <li><strong><code>bbox_inches='tight'</code></strong>: A menudo útil para asegurar que todo el contenido del gráfico (incluyendo títulos y etiquetas) se guarde sin ser recortado.</li>
+                    <li>Otros parámetros incluyen <code>facecolor</code> (color de fondo de la figura), <code>transparent=True</code>, etc.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-variable">x</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">50</span><span class="py-punctuation">)</span>
+<span class="py-variable">y</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">50</span><span class="py-punctuation">)</span>
+<span class="py-variable">colores</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">50</span><span class="py-punctuation">)</span>
+<span class="py-variable">tamanos</span> <span class="py-operator">=</span> <span class="py-number">1000</span> <span class="py-operator">*</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">50</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">scatter</span><span class="py-punctuation">(</span><span class="py-variable">x</span><span class="py-punctuation">,</span> <span class="py-variable">y</span><span class="py-punctuation">,</span> <span class="py-parameter">c</span><span class="py-operator">=</span><span class="py-variable">colores</span><span class="py-punctuation">,</span> <span class="py-parameter">s</span><span class="py-operator">=</span><span class="py-variable">tamanos</span><span class="py-punctuation">,</span> <span class="py-parameter">alpha</span><span class="py-operator">=</span><span class="py-number">0.5</span><span class="py-punctuation">,</span> <span class="py-parameter">cmap</span><span class="py-operator">=</span><span class="py-string">'viridis'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">"Gráfico de Dispersión Aleatorio"</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">colorbar</span><span class="py-punctuation">(</span><span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Intensidad de Color'</span><span class="py-punctuation">)</span> <span class="py-comment"># Añade una barra de color</span>
+
+<span class="py-comment"># Guardar la figura (esto crearía el archivo si se ejecutara)</span>
+<span class="py-comment"># plt.savefig('mi_grafico_dispersion.png', dpi=300, bbox_inches='tight')</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Simulación: Gráfico guardado como 'mi_grafico_dispersion.png'."</span><span class="py-punctuation">)</span>
+<span class="py-comment"># plt.show() # Mostraría el gráfico también</span></code></pre></div>
+                <div class="plot-placeholder">Gráfico de Dispersión Aleatorio<br/>
+(Puntos dispersos con diferentes colores y tamaños)<br/>
+Barra de color presente.</div>
+                <div class="warning-box">
+                    Es importante llamar a <code>plt.savefig()</code> <strong>antes</strong> de <code>plt.show()</code> si estás en un script. Después de <code>plt.show()</code>, la figura a menudo se "limpia" y <code>savefig()</code> podría guardar una imagen en blanco.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Personalización de Gráficos</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has aprendido a hacer tus gráficos mucho más informativos y atractivos!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🏷️</span>
+                        <strong>Títulos/Etiquetas</strong><br>
+                        <code>plt.title()</code><br>
+                        <code>plt.xlabel()</code><br>
+                        <code>plt.ylabel()</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔖</span>
+                        <strong>Leyendas</strong><br>
+                        <code>label="..."</code> en <code>plot()</code><br>
+                        <code>plt.legend()</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🎨</span>
+                        <strong>Colores</strong><br>
+                        Nombres, abreviaturas, hex, RGB(A).
+                        <code>color='red'</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">〰️</span>
+                        <strong>Estilos de Línea</strong><br>
+                        <code>'-'</code>, <code>'--'</code>, <code>':'</code>, <code>'-.'</code>
+                        <code>linestyle='dashed'</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📍</span>
+                        <strong>Marcadores</strong><br>
+                        <code>'o'</code>, <code>'.'</code>, <code>'*'</code>, <code>'s'</code>, etc.
+                        <code>marker='o'</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📏</span>
+                        <strong>Formato Abreviado</strong><br>
+                        <code>'ro-'</code> (rojo, círculo, línea)
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">💾</span>
+                        <strong><code>plt.savefig()</code></strong><br>
+                        Guarda la figura en un archivo.
+                        <code>dpi</code>, <code>bbox_inches</code>
+                    </div>
+                </div>
+                <p>La personalización es clave para comunicar tus hallazgos de manera efectiva a través de visualizaciones.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Personalización Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ahora puedes añadir elementos esenciales y estilizar tus gráficos para mejorar su claridad y apariencia.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El próximo módulo explorará diferentes <strong>Tipos de Gráficos en Matplotlib</strong>, como gráficos de barras, histogramas, gráficos de dispersión y más, para que puedas elegir la mejor visualización para tus datos.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Matplotlib ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>
