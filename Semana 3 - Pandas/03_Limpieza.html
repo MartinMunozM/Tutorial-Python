@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Limpieza y Manejo de Datos Faltantes en Pandas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🧹'; /* Icono para Limpieza de Datos */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Pandas)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* .isnull, .fillna, .dropna, .duplicated, .drop_duplicates */
+        .code-block .py-module { color: #4EC9B0; } /* pandas (pd), numpy (np) */
+        .code-block .py-boolean-none { color: #569CD6; } /* True, False, None */
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Limpieza y Manejo de Datos Faltantes</h1>
+            <p>Aprende a preparar tus datos para un análisis confiable con Pandas</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué son los Datos Faltantes y por qué Importan? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">❓</span>
+                <h2 class="card-title">Datos Faltantes: <span class="pandas-concept">El Problema</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Los datos del mundo real raramente son perfectos. A menudo, encontrarás conjuntos de datos con valores faltantes o nulos. En Pandas, estos valores suelen representarse como <code>NaN</code> (Not a Number), que proviene de NumPy (<code>np.nan</code>).</p>
+                <p><strong>¿Por qué importan los datos faltantes?</strong></p>
+                <ul>
+                    <li><strong>Análisis Incorrectos:</strong> Muchos cálculos estadísticos (como la media) pueden dar resultados incorrectos o errores si no se manejan los NaN.</li>
+                    <li><strong>Modelos Ineficaces:</strong> Los algoritmos de machine learning a menudo no pueden procesar datos con valores faltantes o su rendimiento se ve afectado negativamente.</li>
+                    <li><strong>Visualizaciones Engañosas:</strong> Los gráficos pueden distorsionarse si no se tratan los NaN.</li>
+                </ul>
+                <p>Por lo tanto, la <span class="highlight">detección y el manejo adecuado de datos faltantes</span> es un paso crucial en el preprocesamiento de datos.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span> <span class="py-comment"># Para usar np.nan</span>
+
+<span class="py-variable">datos_sucios</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span>
+    <span class="py-string">'A'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'B'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'x'</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="py-string">'z'</span><span class="py-punctuation">,</span> <span class="py-string">'w'</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'C'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">11</span><span class="py-punctuation">,</span> <span class="py-number">12</span><span class="py-punctuation">,</span> <span class="py-number">13</span><span class="py-punctuation">,</span> <span class="py-number">14</span><span class="py-punctuation">]</span>
+<span class="py-punctuation">}</span>
+<span class="py-variable">df_sucio</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">datos_sucios</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame con datos faltantes (NaN):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_sucio</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">DataFrame con datos faltantes (NaN):
+     A    B   C
+0  1.0    x  10
+1  2.0  NaN  11
+2  NaN    z  12
+3  4.0    w  13
+4  5.0  NaN  14</div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Detección de Valores Nulos -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🕵️</span>
+                <h2 class="card-title">Detección de Nulos: <span class="pandas-concept"><code>.isnull()</code> y <code>.notnull()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Pandas ofrece dos métodos principales para detectar valores nulos:</p>
+                <ul>
+                    <li><strong><code>.isnull()</code></strong>: Devuelve un DataFrame (o Serie) booleano del mismo tamaño que el original, donde <code>True</code> indica un valor nulo (<code>NaN</code>) y <code>False</code> indica un valor no nulo.</li>
+                    <li><strong><code>.notnull()</code></strong>: Es lo opuesto a <code>.isnull()</code>. Devuelve <code>True</code> para valores no nulos y <code>False</code> para nulos.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">data</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'Col1'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'Col2'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'a'</span><span class="py-punctuation">,</span> <span class="py-string">'b'</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-variable">df</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Detectar nulos</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"df.isnull():\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">isnull</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Contar nulos por columna</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Conteos de nulos por columna (df.isnull().sum()):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">isnull</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">.</span><span class="py-method">sum</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>DataFrame original:
+   Col1 Col2
+0   1.0    a
+1   NaN    b
+2   3.0  NaN 
+
+df.isnull():
+    Col1   Col2
+0  False  False
+1   True  False
+2  False   True 
+
+Conteos de nulos por columna (df.isnull().sum()):
+Col1    1
+Col2    1
+dtype: int64</pre></div>
+                <p>Puedes usar <code>.isnull().any()</code> para ver si hay algún nulo en una columna/fila, o <code>.isnull().sum().sum()</code> para el total de nulos en el DataFrame.</p>
+            </div>
+        </div>
+
+        <!-- Paso 3: Estrategias para Manejar Datos Faltantes -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🛠️</span>
+                <h2 class="card-title">Manejando Nulos: <span class="pandas-concept">Eliminación e Imputación</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Hay dos estrategias principales para tratar con datos faltantes:</p>
+                <ol>
+                    <li><strong>Eliminación:</strong> Quitar las filas o columnas que contienen valores nulos.</li>
+                    <li><strong>Imputación:</strong> Rellenar los valores nulos con algún valor estimado.</li>
+                </ol>
+                <p><strong>1. Eliminación con <code>.dropna()</code>:</strong></p>
+                <ul>
+                    <li><code>df.dropna()</code>: Elimina cualquier fila que contenga al menos un valor nulo.</li>
+                    <li><code>df.dropna(axis=1)</code>: Elimina cualquier columna que contenga al menos un valor nulo.</li>
+                    <li><code>df.dropna(how='all')</code>: Elimina filas/columnas solo si todos sus valores son nulos.</li>
+                    <li><code>df.dropna(thresh=N)</code>: Mantiene filas/columnas que tienen al menos <code>N</code> valores no nulos.</li>
+                    <li><code>inplace=True</code>: Modifica el DataFrame original en lugar de devolver uno nuevo.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-variable">df_original</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span><span class="py-string">'X'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="number">2</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'Y'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="string">'a'</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="string">'d'</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_original</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"dropna() (elimina filas con algún NaN):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_original</span><span class="py-punctuation">.</span><span class="py-method">dropna</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"dropna(axis=1) (elimina columnas con algún NaN):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_original</span><span class="py-punctuation">.</span><span class="py-method">dropna</span><span class="py-punctuation">(</span><span class="py-parameter">axis</span><span class="py-operator">=</span><span class="py-number">1</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Original:
+     X    Y
+0  1.0    a
+1  2.0  NaN
+2  NaN  NaN
+3  4.0    d 
+
+dropna() (elimina filas con algún NaN):
+     X  Y
+0  1.0  a
+3  4.0  d 
+
+dropna(axis=1) (elimina columnas con algún NaN):
+Empty DataFrame
+Columns: []
+Index: [0, 1, 2, 3]</pre></div>
+
+                <p><strong>2. Imputación con <code>.fillna()</code>:</strong></p>
+                <p>Rellena los valores <code>NaN</code> con un valor específico, la media, la mediana, la moda, o usando métodos de propagación (<code>method='ffill'</code> para rellenar hacia adelante, <code>method='bfill'</code> para rellenar hacia atrás).</p>
+                 <div class="code-block"><pre><code class="language-python"><span class="py-variable">df_para_rellenar</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span><span class="py-string">'Temp'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">25</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="number">28</span><span class="py-punctuation">,</span> <span class="module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="number">30</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Original para rellenar:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_para_rellenar</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Rellenar con un valor específico (ej. 0)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"fillna(0):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_para_rellenar</span><span class="py-punctuation">.</span><span class="py-method">fillna</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Rellenar con la media de la columna</span>
+<span class="py-variable">media_temp</span> <span class="py-operator">=</span> <span class="py-variable">df_para_rellenar</span><span class="py-punctuation">[</span><span class="py-string">'Temp'</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">mean</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"fillna con la media (</span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">media_temp</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_para_rellenar</span><span class="py-punctuation">.</span><span class="py-method">fillna</span><span class="py-punctuation">(</span><span class="py-variable">media_temp</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Original para rellenar:
+   Temp
+0  25.0
+1   NaN
+2  28.0
+3   NaN
+4  30.0 
+
+fillna(0):
+   Temp
+0  25.0
+1   0.0
+2  28.0
+3   0.0
+4  30.0 
+
+fillna con la media (27.666...):
+        Temp
+0  25.000000
+1  27.666667
+2  28.000000
+3  27.666667
+4  30.000000</pre></div>
+                <div class="warning-box">La elección entre eliminar o imputar depende del contexto: la cantidad de datos faltantes, la naturaleza de los datos y el impacto en el análisis posterior.</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Detección y Tratamiento de Duplicados -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">👯</span>
+                <h2 class="card-title">Manejo de <span class="pandas-concept">Duplicados</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Otro problema común son las filas duplicadas en un DataFrame. Pandas facilita su detección y eliminación.</p>
+                <ul>
+                    <li><strong><code>.duplicated(subset=None, keep='first')</code></strong>: Devuelve una Serie booleana indicando si cada fila es un duplicado de una fila anterior.
+                        <ul>
+                            <li><code>subset</code>: Lista de nombres de columna a considerar para identificar duplicados. Por defecto, todas las columnas.</li>
+                            <li><code>keep</code>:
+                                <ul>
+                                    <li><code>'first'</code>: Marca duplicados como <code>True</code> excepto por la primera aparición. (Default)</li>
+                                    <li><code>'last'</code>: Marca duplicados como <code>True</code> excepto por la última aparición.</li>
+                                    <li><code>False</code>: Marca todas las apariciones de duplicados como <code>True</code>.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong><code>.drop_duplicates(subset=None, keep='first', inplace=False)</code></strong>: Devuelve un DataFrame con las filas duplicadas eliminadas. Los argumentos son similares a <code>.duplicated()</code>.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-variable">data_duplicados</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span>
+    <span class="py-string">'ID'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Valor'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'A'</span><span class="py-punctuation">,</span> <span class="py-string">'B'</span><span class="py-punctuation">,</span> <span class="py-string">'A'</span><span class="py-punctuation">,</span> <span class="py-string">'C'</span><span class="py-punctuation">,</span> <span class="py-string">'B'</span><span class="py-punctuation">,</span> <span class="py-string">'D'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Extra'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'x1'</span><span class="py-punctuation">,</span> <span class="py-string">'y1'</span><span class="py-punctuation">,</span> <span class="py-string">'x2'</span><span class="py-punctuation">,</span> <span class="py-string">'z1'</span><span class="py-punctuation">,</span> <span class="py-string">'y2'</span><span class="py-punctuation">,</span> <span class="py-string">'w1'</span><span class="py-punctuation">]</span>
+<span class="py-punctuation">}</span>
+<span class="py-variable">df_dups</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data_duplicados</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame con duplicados:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_dups</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Detectar duplicados basados en todas las columnas</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"df_dups.duplicated():\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_dups</span><span class="py-punctuation">.</span><span class="py-method">duplicated</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Detectar duplicados basados solo en la columna 'ID'</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"df_dups.duplicated(subset=['ID']):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_dups</span><span class="py-punctuation">.</span><span class="py-method">duplicated</span><span class="py-punctuation">(</span><span class="py-parameter">subset</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-string">'ID'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Eliminar duplicados (considerando todas las columnas, manteniendo la primera aparición)</span>
+<span class="py-variable">df_sin_dups</span> <span class="py-operator">=</span> <span class="py-variable">df_dups</span><span class="py-punctuation">.</span><span class="py-method">drop_duplicates</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame sin duplicados (todas las cols):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_sin_dups</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Eliminar duplicados basados en 'ID', manteniendo la última aparición</span>
+<span class="py-variable">df_sin_dups_id</span> <span class="py-operator">=</span> <span class="py-variable">df_dups</span><span class="py-punctuation">.</span><span class="py-method">drop_duplicates</span><span class="py-punctuation">(</span><span class="py-parameter">subset</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-string">'ID'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-parameter">keep</span><span class="py-operator">=</span><span class="py-string">'last'</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame sin duplicados por 'ID' (keep='last'):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_sin_dups_id</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>DataFrame con duplicados:
+   ID Valor Extra
+0   1     A    x1
+1   2     B    y1
+2   1     A    x2  &lt;-- Si solo miras ID y Valor, esta es duplicada con la fila 0
+3   3     C    z1
+4   2     B    y2  &lt;-- Si solo miras ID y Valor, esta es duplicada con la fila 1
+5   4     D    w1 
+
+df_dups.duplicated():
+0    False
+1    False
+2    False &lt;-- Nota: si (1, A, x1) y (1, A, x2) fueran idénticos, la 2da sería True
+3    False
+4    False
+5    False
+dtype: bool 
+
+df_dups.duplicated(subset=['ID']):
+0    False
+1    False
+2     True  &lt;-- ID 1 ya apareció
+3    False
+4     True  &lt;-- ID 2 ya apareció
+5    False
+dtype: bool 
+
+DataFrame sin duplicados (todas las cols):
+   ID Valor Extra
+0   1     A    x1
+1   2     B    y1
+2   1     A    x2
+3   3     C    z1
+4   2     B    y2
+5   4     D    w1 
+
+DataFrame sin duplicados por 'ID' (keep='last'):
+   ID Valor Extra
+2   1     A    x2
+3   3     C    z1
+4   2     B    y2
+5   4     D    w1</pre></div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Limpieza de Datos</h2>
+            </div>
+            <div class="card-content">
+                <p>La limpieza de datos es un paso esencial antes del análisis.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">❓</span>
+                        <strong>Datos Faltantes</strong><br>
+                        Comunes en datos reales, impactan análisis. Representados por <code>NaN</code>.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🕵️</span>
+                        <strong><code>.isnull()</code></strong><br>
+                        Detecta NaN (devuelve booleano).
+                        <code>df.isnull().sum()</code> para contar.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🗑️</span>
+                        <strong><code>.dropna()</code></strong><br>
+                        Elimina filas/columnas con NaN.
+                        (<code>axis</code>, <code>how</code>, <code>thresh</code>)
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🩹</span>
+                        <strong><code>.fillna()</code></strong><br>
+                        Rellena NaN con valor, media, mediana, etc.
+                        (<code>method='ffill'/'bfill'</code>)
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">👯</span>
+                        <strong><code>.duplicated()</code></strong><br>
+                        Detecta filas duplicadas.
+                        (<code>subset</code>, <code>keep</code>)
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">✂️</span>
+                        <strong><code>.drop_duplicates()</code></strong><br>
+                        Elimina filas duplicadas.
+                        (<code>subset</code>, <code>keep</code>)
+                    </div>
+                </div>
+                <p>Manejar correctamente los datos faltantes y duplicados asegura la calidad y fiabilidad de tus análisis.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Limpieza de Datos Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ahora sabes cómo identificar y tratar datos faltantes y duplicados en tus DataFrames.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El próximo módulo se centrará en <strong>Transformaciones y Operaciones</strong> con DataFrames, donde aprenderás a aplicar funciones, crear nuevas columnas y realizar cálculos más complejos.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Pandas ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

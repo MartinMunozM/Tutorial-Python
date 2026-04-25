@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Introducción a Pandas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🐼'; /* Icono para Pandas */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Pandas)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } /* import, as */
+        .code-block .py-builtin { color: #4EC9B0; } /* print */
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } /* [], (), {} */
+        .code-block .py-method { color: #DCDCAA;} /* pd.Series, pd.DataFrame, .head(), .shape etc. */
+        .code-block .py-module { color: #4EC9B0; } /* pandas (pd), numpy (np) */
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; /* Para tablas largas */
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Introducción a Pandas</h1>
+            <p>Descubre la librería esencial para el análisis y manipulación de datos en Python</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué es Pandas y por qué es importante? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🤔</span>
+                <h2 class="card-title">¿Qué es <span class="pandas-concept">Pandas</span> y Por Qué Usarlo?</h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Pandas</strong> es una librería de Python de código abierto, rápida, potente, flexible y fácil de usar, construida sobre NumPy. Está diseñada específicamente para el <span class="highlight">análisis y manipulación de datos</span>.</p>
+                <p>Es la herramienta de facto para trabajar con datos tabulares (como hojas de cálculo o tablas de bases de datos) en Python.</p>
+                <p><strong>¿Por qué es tan importante?</strong></p>
+                <ul>
+                    <li><strong>Estructuras de Datos Flexibles:</strong> Introduce dos estructuras de datos principales: <code>Series</code> (1D) y <code>DataFrame</code> (2D), que son muy intuitivas para trabajar con datos etiquetados.</li>
+                    <li><strong>Manejo de Datos Faltantes:</strong> Ofrece herramientas robustas para encontrar, rellenar o eliminar datos faltantes (<code>NaN</code>).</li>
+                    <li><strong>Carga y Escritura de Datos:</strong> Puede leer y escribir datos fácilmente desde y hacia una gran variedad de formatos (CSV, Excel, SQL, JSON, etc.).</li>
+                    <li><strong>Manipulación de Datos:</strong> Permite remodelar, filtrar, agrupar, combinar y transformar datos de manera eficiente.</li>
+                    <li><strong>Integración:</strong> Se integra perfectamente con otras librerías del ecosistema científico de Python como NumPy, Matplotlib y Scikit-learn.</li>
+                </ul>
+                <p>Si vas a realizar cualquier tipo de análisis de datos en Python, Pandas será tu mejor aliado.</p>
+                <div class="tip-box">
+                    Por convención, Pandas se importa con el alias <code>pd</code>:
+                    <div class="code-block" style="margin-top:10px;"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span></code></pre></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Series de Pandas -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2 class="card-title">Estructura 1D: <span class="pandas-concept">Series</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una <strong>Serie</strong> de Pandas es como un array de NumPy unidimensional, pero con una característica adicional importante: tiene un <span class="highlight">índice etiquetado</span>. Esto significa que cada elemento de la Serie tiene una etiqueta (índice) que no tiene por qué ser numérica (aunque por defecto lo es, comenzando en 0).</p>
+                <p><strong>Creación de Series:</strong></p>
+                <p>Puedes crear una Serie a partir de una lista, un array de NumPy, o un diccionario.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span> <span class="py-comment"># A menudo se usa con NumPy</span>
+
+<span class="py-comment"># Desde una lista</span>
+<span class="py-variable">datos_lista</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">40</span><span class="py-punctuation">]</span>
+<span class="py-variable">serie1</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">Series</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-operator">=</span><span class="py-variable">datos_lista</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Serie desde lista:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">serie1</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Desde una lista con índice personalizado</span>
+<span class="py-variable">indices_personalizados</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-string">'a'</span><span class="py-punctuation">,</span> <span class="py-string">'b'</span><span class="py-punctuation">,</span> <span class="py-string">'c'</span><span class="py-punctuation">,</span> <span class="py-string">'d'</span><span class="py-punctuation">]</span>
+<span class="py-variable">serie2</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">Series</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-operator">=</span><span class="py-variable">datos_lista</span><span class="py-punctuation">,</span> <span class="py-parameter">index</span><span class="py-operator">=</span><span class="py-variable">indices_personalizados</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nSerie con índice personalizado:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">serie2</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Indexación y operaciones básicas</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nElemento en índice 'b':"</span><span class="py-punctuation">,</span> <span class="py-variable">serie2</span><span class="py-punctuation">[</span><span class="py-string">'b'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Multiplicar por 2:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">serie2</span> <span class="py-operator">*</span> <span class="py-number">2</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Serie desde lista:
+0    10
+1    20
+2    30
+3    40
+dtype: int64
+
+Serie con índice personalizado:
+a    10
+b    20
+c    30
+d    40
+dtype: int64
+
+Elemento en índice 'b': 20
+Multiplicar por 2:
+a    20
+b    40
+c    60
+d    80
+dtype: int64</div>
+                <p>Las Series son la base para las columnas de un DataFrame.</p>
+            </div>
+        </div>
+
+        <!-- Paso 3: DataFrame de Pandas -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🗂️</span>
+                <h2 class="card-title">Estructura 2D: <span class="pandas-concept">DataFrame</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Un <strong>DataFrame</strong> es la estructura de datos principal de Pandas. Es una <span class="highlight">tabla bidimensional</span>, similar a una hoja de cálculo o una tabla SQL, donde los datos están organizados en filas y columnas con etiquetas.</p>
+                <p>Cada columna de un DataFrame es, en esencia, una Serie de Pandas.</p>
+                <p><strong>Creación de DataFrames:</strong></p>
+                <p>Hay muchas formas de crear un DataFrame. Aquí veremos algunas comunes:</p>
+                <p><strong>1. Desde un diccionario de listas o Series:</strong> Las claves del diccionario se convierten en nombres de columna.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+
+<span class="py-variable">datos_dict</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span>
+    <span class="py-string">'Nombre'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'Ana'</span><span class="py-punctuation">,</span> <span class="py-string">'Luis'</span><span class="py-punctuation">,</span> <span class="py-string">'Sofia'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Edad'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">28</span><span class="py-punctuation">,</span> <span class="py-number">34</span><span class="py-punctuation">,</span> <span class="py-number">22</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Ciudad'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'México'</span><span class="py-punctuation">,</span> <span class="py-string">'Bogotá'</span><span class="py-punctuation">,</span> <span class="py-string">'Lima'</span><span class="py-punctuation">]</span>
+<span class="py-punctuation">}</span>
+<span class="py-variable">df1</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">datos_dict</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame desde diccionario:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df1</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">DataFrame desde diccionario:
+   Nombre  Edad  Ciudad
+0    Ana    28  México
+1   Luis    34  Bogotá
+2  Sofia    22    Lima</div>
+
+                <p><strong>2. Desde una lista de diccionarios:</strong> Cada diccionario representa una fila.</p>
+                 <div class="code-block"><pre><code class="language-python"><span class="py-variable">datos_lista_dict</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span>
+    <span class="py-punctuation">{</span><span class="py-string">'Producto'</span><span class="py-punctuation">:</span> <span class="py-string">'Manzana'</span><span class="py-punctuation">,</span> <span class="py-string">'Precio'</span><span class="py-punctuation">:</span> <span class="py-number">50</span><span class="py-punctuation">}</span><span class="py-punctuation">,</span>
+    <span class="py-punctuation">{</span><span class="py-string">'Producto'</span><span class="py-punctuation">:</span> <span class="py-string">'Banana'</span><span class="py-punctuation">,</span> <span class="py-string">'Precio'</span><span class="py-punctuation">:</span> <span class="py-number">30</span><span class="py-punctuation">}</span><span class="py-punctuation">,</span>
+    <span class="py-punctuation">{</span><span class="py-string">'Producto'</span><span class="py-punctuation">:</span> <span class="py-string">'Naranja'</span><span class="py-punctuation">,</span> <span class="py-string">'Precio'</span><span class="py-punctuation">:</span> <span class="py-number">40</span><span class="py-punctuation">,</span> <span class="py-string">'Origen'</span><span class="py-punctuation">:</span> <span class="py-string">'MX'</span><span class="py-punctuation">}</span> <span class="py-comment"># Puede tener claves diferentes</span>
+<span class="py-punctuation">]</span>
+<span class="py-variable">df2</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">datos_lista_dict</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nDataFrame desde lista de diccionarios:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df2</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada (notar el <code>NaN</code> para Origen en las primeras filas):</p>
+                <div class="output-block">DataFrame desde lista de diccionarios:
+   Producto  Precio Origen
+0  Manzana      50    NaN
+1   Banana      30    NaN
+2  Naranja      40     MX</div>
+                <p>Pronto veremos cómo leer datos desde archivos CSV, que es una forma muy común de obtener DataFrames.</p>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Inspeccionando un DataFrame -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🔬</span>
+                <h2 class="card-title">Inspeccionando un <span class="pandas-concept">DataFrame</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una vez que tienes un DataFrame, querrás explorarlo para entender su estructura y contenido. Pandas ofrece varios métodos y atributos útiles:</p>
+                <ul>
+                    <li><strong><code>.head(n=5)</code></strong>: Muestra las primeras <code>n</code> filas (5 por defecto).</li>
+                    <li><strong><code>.tail(n=5)</code></strong>: Muestra las últimas <code>n</code> filas (5 por defecto).</li>
+                    <li><strong><code>.shape</code></strong>: Devuelve una tupla con (número_de_filas, número_de_columnas).</li>
+                    <li><strong><code>.info()</code></strong>: Proporciona un resumen conciso del DataFrame, incluyendo el tipo de dato de cada columna, valores no nulos, y uso de memoria.</li>
+                    <li><strong><code>.describe()</code></strong>: Genera estadísticas descriptivas (como conteo, media, desviación estándar, mínimo, máximo, cuartiles) para las columnas numéricas.</li>
+                    <li><strong><code>.columns</code></strong>: Muestra los nombres de las columnas.</li>
+                    <li><strong><code>.index</code></strong>: Muestra la información del índice de las filas.</li>
+                    <li><strong><code>.dtypes</code></strong>: Muestra el tipo de dato de cada columna.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+
+<span class="py-variable">datos</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span>
+    <span class="py-string">'ColumnaA'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'ColumnaB'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'x'</span><span class="py-punctuation">,</span> <span class="py-string">'y'</span><span class="py-punctuation">,</span> <span class="py-string">'z'</span><span class="py-punctuation">,</span> <span class="py-string">'x'</span><span class="py-punctuation">,</span> <span class="py-string">'y'</span><span class="py-punctuation">,</span> <span class="py-string">'a'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'ColumnaC'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">10.1</span><span class="py-punctuation">,</span> <span class="py-number">20.2</span><span class="py-punctuation">,</span> <span class="py-number">30.3</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="py-number">50.5</span><span class="py-punctuation">,</span> <span class="py-number">60.6</span><span class="py-punctuation">]</span>
+<span class="py-punctuation">}</span>
+<span class="py-variable">df</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">datos</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"--- .head(3) ---"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">head</span><span class="py-punctuation">(</span><span class="py-number">3</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\n--- .shape ---"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\n--- .info() ---"</span><span class="py-punctuation">)</span>
+<span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">info</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\n--- .describe() ---"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">describe</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>--- .head(3) ---
+   ColumnaA ColumnaB  ColumnaC
+0         1        x      10.1
+1         2        y      20.2
+2         3        z      30.3
+
+--- .shape ---
+(6, 3)
+
+--- .info() ---
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 6 entries, 0 to 5
+Data columns (total 3 columns):
+ #   Column    Non-Null Count  Dtype  
+---  ------    --------------  -----  
+ 0   ColumnaA  6 non-null      int64  
+ 1   ColumnaB  6 non-null      object 
+ 2   ColumnaC  5 non-null      float64
+dtypes: float64(1), int64(1), object(1)
+memory usage: 272.0+ bytes
+
+--- .describe() ---
+       ColumnaA   ColumnaC
+count  6.000000   5.000000
+mean   3.500000  34.340000
+std    1.870829  20.676451
+min    1.000000  10.100000
+25%    2.250000  20.200000
+50%    3.500000  30.300000
+75%    4.750000  50.500000
+max    6.000000  60.600000</pre></div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Introducción a Pandas</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Has dado tus primeros pasos con Pandas!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🐼</span>
+                        <strong>¿Qué es Pandas?</strong><br>
+                        Librería para análisis y manipulación de datos tabulares.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📊</span>
+                        <strong>Series (1D)</strong><br>
+                        Array 1D con índice etiquetado.
+                        <code>pd.Series(data, index)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🗂️</span>
+                        <strong>DataFrame (2D)</strong><br>
+                        Tabla 2D con filas y columnas etiquetadas.
+                        <code>pd.DataFrame(data)</code>
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🏗️</span>
+                        <strong>Creación DF</strong><br>
+                        Desde diccionarios, listas de diccionarios, etc.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">👀</span>
+                        <strong><code>.head()</code> / <code>.tail()</code></strong><br>
+                        Primeras/últimas filas.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📏</span>
+                        <strong><code>.shape</code></strong><br>
+                        Dimensiones (filas, cols).
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">ℹ️</span>
+                        <strong><code>.info()</code></strong><br>
+                        Resumen de tipos y nulos.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">📈</span>
+                        <strong><code>.describe()</code></strong><br>
+                        Estadísticas descriptivas.
+                    </div>
+                </div>
+                <p>Conocer estas estructuras y cómo inspeccionarlas es crucial para empezar a trabajar con datos en Pandas.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Introducción a Pandas Completada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Ya conoces las estructuras de datos fundamentales de Pandas: Series y DataFrames.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">El próximo módulo te enseñará cómo realizar <strong>Indexación, Filtrado y Selección</strong> de datos en tus Series y DataFrames. ¡Esto te permitirá extraer la información que necesitas con precisión!</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Pandas ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

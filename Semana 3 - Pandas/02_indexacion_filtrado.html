@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Indexación y Filtrado en Pandas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🔍'; /* Icono para Indexación/Filtrado (lupa) */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Pandas)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } /* >, <, ==, &, | */
+        .code-block .py-punctuation { color: #D4D4D4; } /* [], :, , */
+        .code-block .py-method { color: #DCDCAA;} /* .loc, .iloc */
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; /* Adjusted for potentially wider outputs */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Indexación, Filtrado y Selección en Pandas</h1>
+            <p>Aprende a acceder y manipular datos específicos en tus DataFrames</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: Seleccionando Columnas -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🏛️</span>
+                <h2 class="card-title">Selección de <span class="pandas-concept">Columnas</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una de las operaciones más básicas es seleccionar una o varias columnas de un DataFrame.</p>
+                <p><strong>Seleccionar una sola columna:</strong> Puedes hacerlo usando corchetes <code>[]</code> con el nombre de la columna. Esto devuelve una Serie.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+
+<span class="py-variable">data</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'Nombre'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'Ana'</span><span class="py-punctuation">,</span> <span class="py-string">'Luis'</span><span class="py-punctuation">,</span> <span class="py-string">'Sofia'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+        <span class="py-string">'Edad'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">28</span><span class="py-punctuation">,</span> <span class="py-number">34</span><span class="py-punctuation">,</span> <span class="py-number">22</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+        <span class="py-string">'Ciudad'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'México'</span><span class="py-punctuation">,</span> <span class="py-string">'Bogotá'</span><span class="py-punctuation">,</span> <span class="py-string">'Lima'</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-variable">df</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Seleccionar la columna 'Nombre'</span>
+<span class="py-variable">columna_nombre</span> <span class="py-operator">=</span> <span class="py-variable">df</span><span class="py-punctuation">[</span><span class="py-string">'Nombre'</span><span class="py-punctuation">]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Columna 'Nombre' (es una Serie):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">columna_nombre</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-builtin">type</span><span class="py-punctuation">(</span><span class="py-variable">columna_nombre</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">DataFrame original:
+   Nombre  Edad  Ciudad
+0    Ana    28  México
+1   Luis    34  Bogotá
+2  Sofia    22    Lima 
+
+Columna 'Nombre' (es una Serie):
+0      Ana
+1     Luis
+2    Sofia
+Name: Nombre, dtype: object
+&lt;class 'pandas.core.series.Series'&gt;</div>
+
+                <p><strong>Seleccionar múltiples columnas:</strong> Pasa una lista de nombres de columnas dentro de los corchetes <code>[[]]</code>. Esto devuelve un nuevo DataFrame.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Seleccionar las columnas 'Nombre' y 'Ciudad'</span>
+<span class="py-variable">multiples_columnas</span> <span class="py-operator">=</span> <span class="py-variable">df</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-string">'Nombre'</span><span class="py-punctuation">,</span> <span class="py-string">'Ciudad'</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nColumnas 'Nombre' y 'Ciudad' (es un DataFrame):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">multiples_columnas</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-builtin">type</span><span class="py-punctuation">(</span><span class="py-variable">multiples_columnas</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block">Columnas 'Nombre' y 'Ciudad' (es un DataFrame):
+   Nombre  Ciudad
+0    Ana  México
+1   Luis  Bogotá
+2  Sofia    Lima
+&lt;class 'pandas.core.frame.DataFrame'&gt;</div>
+                <div class="tip-box">También puedes usar la notación de punto (<code>df.Nombre</code>) para seleccionar una columna si el nombre de la columna es una cadena válida en Python y no coincide con un método o atributo existente del DataFrame. Sin embargo, se prefiere la notación de corchetes <code>df['Nombre']</code> por ser más robusta y clara.</div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Selección Basada en Etiquetas: .loc[] -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🏷️</span>
+                <h2 class="card-title">Selección por Etiquetas: <span class="pandas-concept"><code>.loc[]</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>El accesor <code>.loc[]</code> se utiliza para seleccionar datos basándose en las <span class="highlight">etiquetas</span> de las filas y/o columnas.</p>
+                <p>Sintaxis común: <code>df.loc[etiqueta_fila, etiqueta_columna]</code></p>
+                <ul>
+                    <li><code>etiqueta_fila</code>: Puede ser una sola etiqueta, una lista de etiquetas, o un slice de etiquetas.</li>
+                    <li><code>etiqueta_columna</code>: Similar, para columnas.</li>
+                </ul>
+                 <p>Si tu DataFrame tiene un índice numérico por defecto (0, 1, 2...), <code>.loc[]</code> aún lo trata como etiquetas.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+
+<span class="py-variable">data</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'A'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'B'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">40</span><span class="py-punctuation">,</span> <span class="py-number">50</span><span class="py-punctuation">,</span> <span class="py-number">60</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'C'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">70</span><span class="py-punctuation">,</span> <span class="py-number">80</span><span class="py-punctuation">,</span> <span class="py-number">90</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-variable">df_loc</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-punctuation">,</span> <span class="py-parameter">index</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-string">'fila1'</span><span class="py-punctuation">,</span> <span class="py-string">'fila2'</span><span class="py-punctuation">,</span> <span class="py-string">'fila3'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame con índice de etiqueta:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_loc</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Seleccionar la fila 'fila2'</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Fila 'fila2':\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_loc</span><span class="py-punctuation">.</span><span class="py-method">loc</span><span class="py-punctuation">[</span><span class="py-string">'fila2'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Seleccionar el valor en 'fila1', columna 'B'</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nValor en ['fila1', 'B']:"</span><span class="py-punctuation">,</span> <span class="py-variable">df_loc</span><span class="py-punctuation">.</span><span class="py-method">loc</span><span class="py-punctuation">[</span><span class="py-string">'fila1'</span><span class="py-punctuation">,</span> <span class="py-string">'B'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Seleccionar múltiples filas y columnas</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nFilas ['fila1', 'fila3'] y Columnas ['A', 'C']:\n"</span><span class="py-punctuation">,</span> 
+      <span class="py-variable">df_loc</span><span class="py-punctuation">.</span><span class="py-method">loc</span><span class="py-punctuation">[</span><span class="py-punctuation">[</span><span class="py-string">'fila1'</span><span class="py-punctuation">,</span> <span class="py-string">'fila3'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-punctuation">[</span><span class="py-string">'A'</span><span class="py-punctuation">,</span> <span class="py-string">'C'</span><span class="py-punctuation">]</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Slicing con etiquetas (ambos extremos son INCLUIDOS)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nSlicing de filas 'fila1' a 'fila2':\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_loc</span><span class="py-punctuation">.</span><span class="py-method">loc</span><span class="py-punctuation">[</span><span class="py-string">'fila1'</span><span class="py-punctuation">:</span><span class="py-string">'fila2'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>DataFrame con índice de etiqueta:
+        A   B   C
+fila1  10  40  70
+fila2  20  50  80
+fila3  30  60  90 
+
+Fila 'fila2':
+A    20
+B    50
+C    80
+Name: fila2, dtype: int64
+
+Valor en ['fila1', 'B']: 40
+
+Filas ['fila1', 'fila3'] y Columnas ['A', 'C']:
+        A   C
+fila1  10  70
+fila3  30  90
+
+Slicing de filas 'fila1' a 'fila2':
+        A   B   C
+fila1  10  40  70
+fila2  20  50  80</pre></div>
+                 <div class="warning-box">Cuando haces slicing con <code>.loc[]</code> usando etiquetas, el índice final <span class="highlight">sí se incluye</span> en el resultado, a diferencia del slicing estándar de Python o NumPy donde el final es exclusivo.</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Selección Basada en Posición: .iloc[] -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🔢</span>
+                <h2 class="card-title">Selección por Posición: <span class="pandas-concept"><code>.iloc[]</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>El accesor <code>.iloc[]</code> se utiliza para seleccionar datos basándose en su <span class="highlight">posición entera</span> (índice numérico, como en las listas de Python o arrays de NumPy).</p>
+                <p>Sintaxis común: <code>df.iloc[posicion_fila, posicion_columna]</code></p>
+                <ul>
+                    <li>Siempre usa enteros o slices de enteros.</li>
+                    <li>El índice final en un slice <span class="highlight">no se incluye</span> (comportamiento estándar de Python).</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-variable">data</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'X'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'a'</span><span class="py-punctuation">,</span> <span class="py-string">'b'</span><span class="py-punctuation">,</span> <span class="py-string">'c'</span><span class="py-punctuation">,</span> <span class="py-string">'d'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'Y'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'Z'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-boolean-none">True</span><span class="py-punctuation">,</span> <span class="py-boolean-none">False</span><span class="py-punctuation">,</span> <span class="py-boolean-none">True</span><span class="py-punctuation">,</span> <span class="py-boolean-none">False</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-variable">df_iloc</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-punctuation">,</span> <span class="py-parameter">index</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-string">'r1'</span><span class="py-punctuation">,</span> <span class="py-string">'r2'</span><span class="py-punctuation">,</span> <span class="py-string">'r3'</span><span class="py-punctuation">,</span> <span class="py-string">'r4'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_iloc</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Seleccionar la primera fila (posición 0)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Primera fila (df_iloc.iloc[0]):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_iloc</span><span class="py-punctuation">.</span><span class="py-method">iloc</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Seleccionar el valor en la posición (1, 2) -> fila 1, columna 2</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nValor en posición (1, 2):"</span><span class="py-punctuation">,</span> <span class="py-variable">df_iloc</span><span class="py-punctuation">.</span><span class="py-method">iloc</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Slicing: primeras 2 filas y columnas de la posición 0 a la 1 (excluida la 2)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nSlicing df_iloc.iloc[:2, 0:2]:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_iloc</span><span class="py-punctuation">.</span><span class="py-method">iloc</span><span class="py-punctuation">[</span><span class="py-punctuation">:</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">:</span><span class="py-number">2</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>DataFrame original:
+     X  Y      Z
+r1  a  1   True
+r2  b  2  False
+r3  c  3   True
+r4  d  4  False 
+
+Primera fila (df_iloc.iloc[0]):
+X       a
+Y       1
+Z    True
+Name: r1, dtype: object
+
+Valor en posición (1, 2): False
+
+Slicing df_iloc.iloc[:2, 0:2]:
+     X  Y
+r1  a  1
+r2  b  2</pre></div>
+                 <div class="tip-box"><code>.loc[]</code> es para etiquetas, <code>.iloc[]</code> es para posiciones enteras. ¡No los confundas!</div>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Filtrado Condicional y Máscaras Booleanas -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">⚖️</span>
+                <h2 class="card-title">Filtrado Condicional y <span class="pandas-concept">Máscaras Booleanas</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una de las tareas más poderosas es filtrar filas de un DataFrame basándose en condiciones.</p>
+                <p>Esto se hace creando una <strong>máscara booleana</strong> (una Serie de <code>True</code>/<code>False</code>) y luego usándola para indexar el DataFrame. Solo se seleccionarán las filas donde la máscara sea <code>True</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+
+<span class="py-variable">data</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span><span class="py-string">'Nombre'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'Ana'</span><span class="py-punctuation">,</span> <span class="py-string">'Luis'</span><span class="py-punctuation">,</span> <span class="py-string">'Sofia'</span><span class="py-punctuation">,</span> <span class="py-string">'Carlos'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+        <span class="py-string">'Edad'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">28</span><span class="py-punctuation">,</span> <span class="py-number">34</span><span class="py-punctuation">,</span> <span class="py-number">22</span><span class="py-punctuation">,</span> <span class="py-number">45</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+        <span class="py-string">'Puntos'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">150</span><span class="py-punctuation">,</span> <span class="py-number">200</span><span class="py-punctuation">,</span> <span class="py-number">120</span><span class="py-punctuation">,</span> <span class="py-number">250</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span>
+<span class="py-variable">df_filter</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame original:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_filter</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Filtrar personas mayores de 30 años</span>
+<span class="py-variable">mascara_edad</span> <span class="py-operator">=</span> <span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-string">'Edad'</span><span class="py-punctuation">]</span> <span class="py-operator">&gt;</span> <span class="py-number">30</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Máscara de edad (>30):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">mascara_edad</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Personas mayores de 30:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-variable">mascara_edad</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Filtrar personas con más de 180 puntos</span>
+<span class="py-comment"># Se puede hacer directamente sin crear la variable máscara</span>
+<span class="py-variable">altos_puntos</span> <span class="py-operator">=</span> <span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-string">'Puntos'</span><span class="py-punctuation">]</span> <span class="py-operator">&gt;</span> <span class="py-number">180</span><span class="py-punctuation">]</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Personas con más de 180 puntos:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">altos_puntos</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Combinar condiciones: Edad > 25 Y Puntos < 200</span>
+<span class="py-comment"># Usa & para AND, | para OR, y ~ para NOT. ¡No olvides los paréntesis!</span>
+<span class="py-variable">condicion_combinada</span> <span class="py-operator">=</span> <span class="py-punctuation">(</span><span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-string">'Edad'</span><span class="py-punctuation">]</span> <span class="py-operator">&gt;</span> <span class="py-number">25</span><span class="py-punctuation">)</span> <span class="py-operator">&</span> <span class="py-punctuation">(</span><span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-string">'Puntos'</span><span class="py-punctuation">]</span> <span class="py-operator">&lt;</span> <span class="py-number">200</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nPersonas con Edad > 25 Y Puntos < 200:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df_filter</span><span class="py-punctuation">[</span><span class="py-variable">condicion_combinada</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>DataFrame original:
+   Nombre  Edad  Puntos
+0     Ana    28     150
+1    Luis    34     200
+2   Sofia    22     120
+3  Carlos    45     250 
+
+Máscara de edad (&gt;30):
+0    False
+1     True
+2    False
+3     True
+Name: Edad, dtype: bool 
+
+Personas mayores de 30:
+   Nombre  Edad  Puntos
+1    Luis    34     200
+3  Carlos    45     250 
+
+Personas con más de 180 puntos:
+   Nombre  Edad  Puntos
+1    Luis    34     200
+3  Carlos    45     250
+
+Personas con Edad &gt; 25 Y Puntos &lt; 200:
+  Nombre  Edad  Puntos
+0    Ana    28     150</pre></div>
+                <div class="warning-box">Cuando combines múltiples condiciones booleanas, usa los operadores bitwise <code>&</code> (AND), <code>|</code> (OR), <code>~</code> (NOT) y asegúrate de encerrar cada condición individual entre paréntesis debido a la precedencia de operadores.</div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Indexación y Filtrado</h2>
+            </div>
+            <div class="card-content">
+                <p>¡Dominar la selección de datos es clave en Pandas!</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🏛️</span>
+                        <strong>Columnas</strong><br>
+                        <code>df['Col']</code> (Serie)<br>
+                        <code>df[['Col1', 'Col2']]</code> (DataFrame)
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🏷️</span>
+                        <strong><code>.loc[]</code> (Etiquetas)</strong><br>
+                        <code>df.loc[fila_etq, col_etq]</code><br>
+                        Slicing incluye el final.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔢</span>
+                        <strong><code>.iloc[]</code> (Posición)</strong><br>
+                        <code>df.iloc[fila_pos, col_pos]</code><br>
+                        Slicing excluye el final.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">✅</span>
+                        <strong>Máscaras Booleanas</strong><br>
+                        <code>df[df['Col'] > val]</code><br>
+                        Filtrado condicional.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🔗</span>
+                        <strong>Condiciones Múltiples</strong><br>
+                        Usa <code>&</code> (AND), <code>|</code> (OR) con paréntesis.
+                        <code>df[(cond1) & (cond2)]</code>
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🎯</span>
+                        <strong>Precisión</strong><br>
+                        Elige el método correcto (<code>loc</code> vs <code>iloc</code>) según necesites seleccionar por etiqueta o posición.
+                    </div>
+                </div>
+                <p>Con estas técnicas, puedes extraer exactamente los subconjuntos de datos que necesitas para tu análisis.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Selección Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Has aprendido a seleccionar, filtrar e indexar datos en DataFrames de Pandas con gran precisión.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">En el próximo módulo, te enfocarás en la <strong>Limpieza y Manejo de Datos Faltantes</strong>, un paso crucial en cualquier proyecto de análisis de datos para asegurar la calidad y fiabilidad de tus resultados.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Continuar con Pandas ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>
