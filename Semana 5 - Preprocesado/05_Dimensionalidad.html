@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Reducción de Dimensionalidad</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '📉'; /* Icono para Reducción de Dimensionalidad */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Scikit-learn/Pandas)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* .fit_transform */
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; } /* PCA, StandardScaler */
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-15px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Reducción de Dimensionalidad</h1>
+            <p>Simplifica tus datos sin perder información esencial con PCA</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué es la Reducción de Dimensionalidad? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🌀</span>
+                <h2 class="card-title">¿Qué es la Reducción de Dimensionalidad?</h2>
+            </div>
+            <div class="card-content">
+                <p>Imagina que tienes un conjunto de datos con cientos o miles de columnas (características o "dimensiones"). Analizar, visualizar y modelar con tantos datos puede ser computacionalmente costoso y propenso al sobreajuste ("la maldición de la dimensionalidad").</p>
+                <p>La <strong>Reducción de Dimensionalidad</strong> es el proceso de reducir el número de variables en un conjunto de datos, conservando la mayor cantidad de información "importante" posible.</p>
+                <p><strong>Beneficios:</strong></p>
+                <ul>
+                    <li><strong>Visualización:</strong> Nos permite visualizar datos de alta dimensionalidad en 2D o 3D.</li>
+                    <li><strong>Eficiencia:</strong> Reduce el tiempo de entrenamiento y los requerimientos de almacenamiento.</li>
+                    <li><strong>Rendimiento del Modelo:</strong> Puede mejorar el rendimiento de algunos modelos al eliminar ruido y redundancia.</li>
+                </ul>
+                <p>La técnica más popular para la reducción de dimensionalidad lineal es el <strong>Análisis de Componentes Principales (PCA)</strong>.</p>
+                <div class="tip-box">
+                    PCA encuentra nuevas variables (componentes principales) que son combinaciones lineales de las originales y que capturan la máxima varianza posible en los datos.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Introducción a PCA -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🗺️</span>
+                <h2 class="card-title">Análisis de Componentes Principales (<span class="pandas-concept">PCA</span>)</h2>
+            </div>
+            <div class="card-content">
+                <p>El <strong>Análisis de Componentes Principales (PCA)</strong> es un algoritmo que transforma tus datos en un nuevo sistema de coordenadas. En este nuevo sistema:</p>
+                <ul>
+                    <li>El <strong>primer componente principal (PC1)</strong> es el eje que captura la mayor varianza (dispersión) en los datos.</li>
+                    <li>El <strong>segundo componente principal (PC2)</strong> es el eje, ortogonal (perpendicular) al primero, que captura la mayor parte de la varianza restante.</li>
+                    <li>Y así sucesivamente...</li>
+                </ul>
+                <p>Al quedarnos solo con los primeros componentes (ej. PC1 y PC2), podemos representar la mayor parte de la estructura de nuestros datos en un espacio de menor dimensión.</p>
+                <div class="warning-box">
+                    <strong>¡Importante!</strong> PCA es muy sensible a la escala de las variables. Antes de aplicar PCA, es <span class="highlight">esencial estandarizar tus datos</span> (media 0 y desviación estándar 1) para que todas las variables contribuyan por igual.
+                </div>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">from</span> <span class="py-module">sklearn.preprocessing</span> <span class="py-keyword">import</span> <span class="py-class-name">StandardScaler</span>
+<span class="py-keyword">from</span> <span class="py-module">sklearn.decomposition</span> <span class="py-keyword">import</span> <span class="py-class-name">PCA</span>
+<span class="py-keyword">from</span> <span class="py-module">sklearn.datasets</span> <span class="py-keyword">import</span> <span class="py-method">load_iris</span> <span class="py-comment"># Un dataset clásico</span>
+
+<span class="py-comment"># 1. Cargar y preparar datos de ejemplo</span>
+<span class="py-variable">iris</span> <span class="py-operator">=</span> <span class="py-method">load_iris</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-variable">X</span> <span class="py-operator">=</span> <span class="py-variable">iris</span><span class="py-punctuation">.</span><span class="py-variable">data</span>
+<span class="py-variable">y</span> <span class="py-operator">=</span> <span class="py-variable">iris</span><span class="py-punctuation">.</span><span class="py-variable">target</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Forma original de los datos: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">X</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span> <span class="py-comment"># (150 muestras, 4 características)</span>
+
+<span class="py-comment"># 2. Estandarizar los datos</span>
+<span class="py-variable">scaler</span> <span class="py-operator">=</span> <span class="py-class-name">StandardScaler</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-variable">X_scaled</span> <span class="py-operator">=</span> <span class="py-variable">scaler</span><span class="py-punctuation">.</span><span class="py-method">fit_transform</span><span class="py-punctuation">(</span><span class="py-variable">X</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># 3. Aplicar PCA para reducir a 2 dimensiones</span>
+<span class="py-variable">pca</span> <span class="py-operator">=</span> <span class="py-class-name">PCA</span><span class="py-punctuation">(</span><span class="py-parameter">n_components</span><span class="py-operator">=</span><span class="py-number">2</span><span class="py-punctuation">)</span>
+<span class="py-variable">X_pca</span> <span class="py-operator">=</span> <span class="py-variable">pca</span><span class="py-punctuation">.</span><span class="py-method">fit_transform</span><span class="py-punctuation">(</span><span class="py-variable">X_scaled</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"Forma de los datos después de PCA: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">X_pca</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Forma original de los datos: (150, 4)
+Forma de los datos después de PCA: (150, 2)</pre></div>
+                <p>Hemos reducido con éxito nuestras 4 características a 2 componentes principales.</p>
+            </div>
+        </div>
+
+        <!-- Paso 3: Visualización de Datos Reducidos -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🎨</span>
+                <h2 class="card-title">Visualización de Datos <span class="pandas-concept">Reducidos</span></h2>
+            </div>
+            <div class="card-content">
+                <p>El principal beneficio de reducir a 2 o 3 dimensiones es que podemos <span class="highlight">visualizar los datos</span>. Un gráfico de dispersión (scatterplot) es ideal para esto.</p>
+                <p>Podemos graficar el primer componente principal (PC1) en el eje X y el segundo (PC2) en el eje Y. Si tenemos etiquetas (como en el dataset Iris), podemos colorear los puntos según su clase para ver si PCA ha logrado separar los grupos.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+<span class="py-keyword">import</span> <span class="py-module">seaborn</span> <span class="py-keyword">as</span> <span class="py-module">sns</span>
+
+<span class="py-comment"># Crear un DataFrame con los resultados de PCA para facilitar la visualización</span>
+<span class="py-variable">df_pca</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-operator">=</span><span class="py-variable">X_pca</span><span class="py-punctuation">,</span> <span class="py-parameter">columns</span><span class="py-operator">=</span><span class="py-punctuation">[</span><span class="py-string">'PC1'</span><span class="py-punctuation">,</span> <span class="py-string">'PC2'</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-variable">df_pca</span><span class="py-punctuation">[</span><span class="py-string">'Especie'</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-variable">y</span> <span class="py-comment"># Añadir la variable objetivo (la especie de flor)</span>
+
+<span class="py-comment"># Mapear los números de especie a nombres para la leyenda</span>
+<span class="py-variable">df_pca</span><span class="py-punctuation">[</span><span class="py-string">'Especie'</span><span class="py-punctuation">]</span> <span class="py-operator">=</span> <span class="py-variable">df_pca</span><span class="py-punctuation">[</span><span class="py-string">'Especie'</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">map</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span><span class="py-number">0</span><span class="py-punctuation">:</span> <span class="py-string">'Setosa'</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">:</span> <span class="py-string">'Versicolor'</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">:</span> <span class="py-string">'Virginica'</span><span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Crear el gráfico de dispersión</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">scatterplot</span><span class="py-punctuation">(</span><span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'PC1'</span><span class="py-punctuation">,</span> <span class="py-parameter">y</span><span class="py-operator">=</span><span class="py-string">'PC2'</span><span class="py-punctuation">,</span> <span class="py-parameter">hue</span><span class="py-operator">=</span><span class="py-string">'Especie'</span><span class="py-punctuation">,</span> <span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">df_pca</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Visualización PCA del Dataset Iris'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">show</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                <p><strong>¿Qué veríamos?</strong></p>
+                <p>Un gráfico 2D donde cada punto es una flor. Los puntos estarían coloreados según su especie. Idealmente, veríamos que los puntos de la misma especie están agrupados, lo que indica que los 2 componentes principales han capturado bien la estructura que separa las clases. Para el dataset Iris, la especie 'Setosa' aparecería claramente separada de las otras dos.</p>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Interpretación de Componentes Principales -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🧠</span>
+                <h2 class="card-title">Interpretación de <span class="pandas-concept">Componentes</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una vez aplicado PCA, es importante saber cuánta información hemos retenido. El objeto PCA de Scikit-learn tiene atributos útiles para esto:</p>
+                <ul>
+                    <li><strong><code>.explained_variance_ratio_</code></strong>: Un array que muestra el <span class="highlight">porcentaje de varianza</span> explicado por cada componente.</li>
+                    <li><strong><code>.components_</code></strong>: Muestra cómo cada componente principal está compuesto por las características originales. Los valores más altos (en magnitud) indican qué características originales son más importantes para ese componente.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Usando el objeto 'pca' del paso 2</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Varianza explicada por cada componente:"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">pca</span><span class="py-punctuation">.</span><span class="py-variable">explained_variance_ratio_</span><span class="py-punctuation">)</span>
+
+<span class="py-variable">total_varianza</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">sum</span><span class="py-punctuation">(</span><span class="py-variable">pca</span><span class="py-punctuation">.</span><span class="py-variable">explained_variance_ratio_</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"\nVarianza total explicada por los 2 componentes: </span><span class="py-fstring-brace">{</span><span class="py-fstring-interpolated">total_varianza</span><span class="py-punctuation">:</span><span class="py-string">.2f</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nComposición de los componentes:"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"PC1:"</span><span class="py-punctuation">,</span> <span class="py-variable">pca</span><span class="py-punctuation">.</span><span class="py-variable">components_</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"PC2:"</span><span class="py-punctuation">,</span> <span class="py-variable">pca</span><span class="py-punctuation">.</span><span class="py-variable">components_</span><span class="py-punctuation">[</span><span class="py-number">1</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada (aproximada):</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Varianza explicada por cada componente:
+[0.72962445 0.22850762]
+
+Varianza total explicada por los 2 componentes: 0.96
+
+Composición de los componentes:
+PC1: [ 0.521 -0.269  0.58   0.564]
+PC2: [0.377  0.923  0.024  0.066]</pre></div>
+                <p><strong>Interpretación:</strong></p>
+                <ul>
+                    <li>El primer componente (PC1) explica aproximadamente el <strong>73%</strong> de la varianza en los datos.</li>
+                    <li>El segundo componente (PC2) explica otro <strong>23%</strong>.</li>
+                    <li>Juntos, los dos componentes capturan casi el <strong>96%</strong> de la información original, ¡usando solo la mitad de las dimensiones!</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Reducción de Dimensionalidad</h2>
+            </div>
+            <div class="card-content">
+                <p>Simplificar tus datos es una técnica avanzada pero muy poderosa.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">📉</span>
+                        <strong>Objetivo</strong><br>
+                        Reducir el número de variables (features) conservando la información.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🗺️</span>
+                        <strong>PCA</strong><br>
+                        Análisis de Componentes Principales. Técnica lineal más común.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚠️</span>
+                        <strong>Requisito Previo</strong><br>
+                        ¡Estandarizar los datos! (<code>StandardScaler</code>)
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🎨</span>
+                        <strong>Visualización</strong><br>
+                        Permite graficar datos de alta dimensionalidad en 2D o 3D.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🧠</span>
+                        <strong>Interpretación</strong><br>
+                        <code>explained_variance_ratio_</code>
+                        nos dice cuánta información retiene cada componente.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Scikit-learn</strong><br>
+                        La librería clave: <code>sklearn.decomposition.PCA</code>
+                    </div>
+                </div>
+                <p>PCA y otras técnicas de reducción de dimensionalidad son herramientas clave en el preprocesado para machine learning y la visualización de datos complejos.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Semana de Análisis y Preprocesado Completada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">¡Felicidades! Has completado esta semana sobre los fundamentos del preprocesado de datos.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Con tus datos limpios, transformados y posiblemente simplificados, estás en una posición excelente para comenzar a aplicar modelos de Machine Learning. La próxima semana sobre <strong>Regresión</strong> te enseñará a predecir valores continuos, uno de los tipos de modelado más importantes.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                    <p>¡Has construido una base sólida para el Machine Learning!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Finalizar Semana 🏆';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>

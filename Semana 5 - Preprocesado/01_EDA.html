@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Análisis Exploratorio de Datos (EDA)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🔍'; /* Icono para EDA */
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Pandas)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Syntax Highlighting for Python */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string, .code-block .py-fstring-text { color: #CE9178; } 
+        .code-block .py-fstring-brace { color: #C586C0; font-weight: normal; } 
+        .code-block .py-fstring-interpolated { color: #9CDCFE; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-parameter { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} /* .describe, .info, .value_counts, etc. */
+        .code-block .py-module { color: #4EC9B0; } /* pandas (pd), seaborn (sns) */
+        .code-block .py-boolean-none { color: #569CD6; } 
+        .code-block .py-decorator { color: #C586C0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+        .code-block .py-escape-char { color: #D7BA7D; }
+
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box, .error-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before, .error-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .error-box { 
+             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+             border-left-color: #dc3545;
+             color: #721c24;
+        }
+        .error-box::before {
+            content: '❌ ';
+        }
+        .warning-box pre, .tip-box pre {
+            background-color: rgba(0,0,0,0.05);
+            color: inherit;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+         .warning-box code, .tip-box code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.95em;
+         }
+
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+        .summary-item code { 
+            font-size: 0.85em;
+            padding: 1px 4px;
+            display: block; 
+            margin-top: 5px;
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+         .author-box p {
+            margin-top: 8px;
+            opacity: 0.8;
+            font-size: 0.95rem;
+         }
+
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .header { padding: 25px 20px; }
+            .header h1 { font-size: 1.8rem; }
+            .header::before { font-size: 2.5rem; top: 5px; right: 10px;}
+            .step-counter { top: 10px; left: 10px; padding: 6px 10px; font-size: 0.8rem;}
+            
+            .card {
+                padding: 25px;
+                min-height: auto; 
+            }
+             .card-title { font-size: 1.5rem; }
+             .card-icon { font-size: 2rem; }
+            
+            .navigation {
+                padding: 20px 25px;
+                flex-direction: column;
+                gap: 10px; 
+            }
+            .btn {
+                width: 100%;
+                padding: 14px; 
+                font-size: 0.95rem;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .thank-you-screen { padding: 30px 20px; }
+            .thank-you-screen .icon { font-size: 3.5rem; }
+
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span>
+            </div>
+            <h1>Tutorial: Análisis Exploratorio de Datos (EDA)</h1>
+            <p>Descubre los patrones y secretos que esconden tus datos</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <!-- Paso 1: ¿Qué es el Análisis Exploratorio de Datos (EDA)? -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🕵️</span>
+                <h2 class="card-title">¿Qué es el <span class="pandas-concept">EDA</span>?</h2>
+            </div>
+            <div class="card-content">
+                <p>El <strong>Análisis Exploratorio de Datos (EDA)</strong> es el proceso de investigar conjuntos de datos para resumir sus principales características, a menudo con métodos visuales. Es como ser un detective que busca pistas en los datos antes de construir un caso (o un modelo).</p>
+                <p>El objetivo del EDA es:</p>
+                <ul>
+                    <li>Entender la estructura del conjunto de datos.</li>
+                    <li>Identificar valores atípicos (outliers) y anomalías.</li>
+                    <li>Descubrir patrones, relaciones y tendencias entre variables.</li>
+                    <li>Verificar suposiciones que se necesitarán para análisis más avanzados.</li>
+                </ul>
+                <p>Es un paso <span class="highlight">crucial y fundamental</span> en cualquier proyecto de ciencia de datos.</p>
+                <div class="tip-box">
+                    Para este tutorial, usaremos Pandas para el análisis y mencionaremos librerías como <strong>Matplotlib</strong> y <strong>Seaborn</strong> para la visualización, que son el siguiente paso lógico.
+                </div>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+
+<span class="py-comment"># Crearemos un DataFrame de ejemplo sobre ventas de propiedades</span>
+<span class="py-variable">data</span> <span class="py-operator">=</span> <span class="py-punctuation">{</span>
+    <span class="py-string">'Zona'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'Norte'</span><span class="py-punctuation">,</span> <span class="py-string">'Sur'</span><span class="py-punctuation">,</span> <span class="py-string">'Norte'</span><span class="py-punctuation">,</span> <span class="py-string">'Centro'</span><span class="py-punctuation">,</span> <span class="py-string">'Sur'</span><span class="py-punctuation">,</span> <span class="py-string">'Norte'</span><span class="py-punctuation">,</span> <span class="py-string">'Sur'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Habitaciones'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">3</span><span class="py-punctuation">,</span> <span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Precio_Miles'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">2500</span><span class="py-punctuation">,</span> <span class="py-number">3200</span><span class="py-punctuation">,</span> <span class="py-number">2600</span><span class="py-punctuation">,</span> <span class="py-number">4500</span><span class="py-punctuation">,</span> <span class="py-number">2100</span><span class="py-punctuation">,</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">nan</span><span class="py-punctuation">,</span> <span class="py-number">2900</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span>
+    <span class="py-string">'Antiguedad_Anios'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">10</span><span class="py-punctuation">,</span> <span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-number">12</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">20</span><span class="py-punctuation">,</span> <span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">]</span>
+<span class="py-punctuation">}</span>
+<span class="py-variable">df</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-variable">data</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"DataFrame de ejemplo:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df</span><span class="py-punctuation">)</span></code></pre></div>
+            </div>
+        </div>
+
+        <!-- Paso 2: Descripción General con .info() y .describe() -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🔬</span>
+                <h2 class="card-title">Primer Vistazo: <span class="pandas-concept"><code>.info()</code> y <code>.describe()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Los primeros pasos en cualquier EDA son usar <code>.info()</code> y <code>.describe()</code> para obtener un resumen rápido del DataFrame.</p>
+                <p><strong><code>.info()</code></strong>: Nos da información sobre la estructura.</p>
+                <ul>
+                    <li>El número total de filas (Entries).</li>
+                    <li>El número de columnas.</li>
+                    <li>El tipo de dato (Dtype) de cada columna.</li>
+                    <li>El número de valores no nulos por columna (¡clave para detectar datos faltantes!).</li>
+                    <li>El uso de memoria.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Usaremos el df del paso anterior</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"--- df.info() ---"</span><span class="py-punctuation">)</span>
+<span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">info</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada (la impresión se muestra en el bloque de salida, pero en un entorno real se imprime en la consola):</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 7 entries, 0 to 6
+Data columns (total 4 columns):
+ #   Column            Non-Null Count  Dtype  
+---  ------            --------------  -----  
+ 0   Zona              7 non-null      object 
+ 1   Habitaciones      7 non-null      int64  
+ 2   Precio_Miles      6 non-null      float64
+ 3   Antiguedad_Anios  7 non-null      int64  
+dtypes: float64(1), int64(2), object(1)
+memory usage: 352.0+ bytes</pre></div>
+                 <p><strong><code>.describe()</code></strong>: Nos da un resumen estadístico de las <span class="highlight">columnas numéricas</span>.</p>
+                 <ul>
+                    <li><code>count</code>: Número de valores no nulos.</li>
+                    <li><code>mean</code>: Media (promedio).</li>
+                    <li><code>std</code>: Desviación estándar (medida de dispersión).</li>
+                    <li><code>min</code>, <code>25%</code>, <code>50%</code> (mediana), <code>75%</code>, <code>max</code>: Resumen de la distribución.</li>
+                </ul>
+                 <div class="code-block"><pre><code class="language-python"><span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\n--- df.describe() ---"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-variable">df</span><span class="py-punctuation">.</span><span class="py-method">describe</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>--- df.describe() ---
+       Habitaciones  Precio_Miles  Antiguedad_Anios
+count      7.000000      6.000000          7.000000
+mean       3.428571   2966.666667          8.285714
+std        0.975900    821.380954          6.551221
+min        2.000000   2100.000000          1.000000
+25%        3.000000   2525.000000          3.500000
+50%        3.000000   2750.000000          8.000000
+75%        4.000000   3125.000000         11.000000
+max        5.000000   4500.000000         20.000000</pre></div>
+                <div class="tip-box">Una gran diferencia entre la media (<code>mean</code>) y la mediana (<code>50%</code>) puede indicar que la distribución de los datos está sesgada o que hay valores atípicos (outliers).</div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Análisis de Frecuencias: .value_counts() -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">#️⃣</span>
+                <h2 class="card-title">Análisis de Frecuencias: <span class="pandas-concept"><code>.value_counts()</code></span></h2>
+            </div>
+            <div class="card-content">
+                <p>Para las columnas categóricas (como 'Zona'), es útil saber cuántas veces aparece cada categoría. El método <code>.value_counts()</code> es perfecto para esto.</p>
+                <p>Devuelve una Serie con el conteo de cada valor único, ordenada de mayor a menor.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-comment"># Usando el df del paso 1</span>
+<span class="py-variable">df</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span><span class="py-string">'Zona'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-string">'Norte'</span><span class="py-punctuation">,</span> <span class="py-string">'Sur'</span><span class="py-punctuation">,</span> <span class="py-string">'Norte'</span><span class="py-punctuation">,</span> <span class="py-string">'Centro'</span><span class="py-punctuation">,</span> <span class="py-string">'Sur'</span><span class="py-punctuation">,</span> <span class="py-string">'Norte'</span><span class="py-punctuation">,</span> <span class="py-string">'Sur'</span><span class="py-punctuation">]</span><span class="py-punctuation">,</span> <span class="py-string">'Habitaciones'</span><span class="py-punctuation">:</span> <span class="py-punctuation">[</span><span class="py-number">3</span><span class="py-punctuation">,</span><span class="py-number">4</span><span class="py-punctuation">,</span><span class="py-number">3</span><span class="py-punctuation">,</span><span class="py-number">5</span><span class="py-punctuation">,</span><span class="py-number">2</span><span class="py-punctuation">,</span><span class="py-number">3</span><span class="py-punctuation">,</span><span class="py-number">4</span><span class="py-punctuation">]</span><span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Conteo de valores en la columna 'Zona'</span>
+<span class="py-variable">conteo_zona</span> <span class="py-operator">=</span> <span class="py-variable">df</span><span class="py-punctuation">[</span><span class="py-string">'Zona'</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">value_counts</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Conteo de propiedades por Zona:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">conteo_zona</span><span class="py-punctuation">,</span> <span class="py-string">"\n"</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># También podemos ver la frecuencia relativa (porcentaje)</span>
+<span class="py-variable">frecuencia_zona</span> <span class="py-operator">=</span> <span class="py-variable">df</span><span class="py-punctuation">[</span><span class="py-string">'Zona'</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">value_counts</span><span class="py-punctuation">(</span><span class="py-parameter">normalize</span><span class="py-operator">=</span><span class="py-boolean-none">True</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Frecuencia de propiedades por Zona (%):\n"</span><span class="py-punctuation">,</span> <span class="py-variable">frecuencia_zona</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Se puede aplicar a columnas numéricas también</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nConteo por número de habitaciones:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">df</span><span class="py-punctuation">[</span><span class="py-string">'Habitaciones'</span><span class="py-punctuation">]</span><span class="py-punctuation">.</span><span class="py-method">value_counts</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                 <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Conteo de propiedades por Zona:
+Norte     3
+Sur       3
+Centro    1
+Name: Zona, dtype: int64 
+
+Frecuencia de propiedades por Zona (%):
+Norte     0.428571
+Sur       0.428571
+Centro    0.142857
+Name: Zona, dtype: float64
+
+Conteo por número de habitaciones:
+3    3
+4    2
+5    1
+2    1
+Name: Habitaciones, dtype: int64</pre></div>
+                <p>Esta función es excelente para entender la distribución de variables categóricas y discretas.</p>
+            </div>
+        </div>
+        
+        <!-- Paso 4: Visualizando Distribuciones y Outliers -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">📈</span>
+                <h2 class="card-title">Visualizando Distribuciones y <span class="pandas-concept">Outliers</span></h2>
+            </div>
+                        <div class="card-content">
+                <p>Una imagen vale más que mil palabras, y en EDA, las visualizaciones son clave. Aquí mencionamos los gráficos más comunes para entender variables numéricas. Para graficar, se suelen usar librerías como <strong>Matplotlib</strong> y <strong>Seaborn</strong>.</p>
+                
+                <p><strong>Histograma 📊:</strong> Muestra la frecuencia de valores en intervalos (bins). Es ideal para ver la forma de la distribución de una variable.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">seaborn</span> <span class="py-keyword">as</span> <span class="py-module">sns</span>
+<span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+
+<span class="py-comment"># Este código generaría un histograma del precio</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">histplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">df</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Precio_Miles'</span><span class="py-punctuation">,</span> <span class="py-parameter">kde</span><span class="py-operator">=</span><span class="py-boolean-none">True</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Distribución de Precios'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">show</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                <p><strong>¿Qué veríamos?</strong> Un gráfico de barras que muestra cuántas propiedades caen en diferentes rangos de precios. La línea suave (<code>kde=True</code>) es un gráfico de densidad, que suaviza el histograma.</p>
+
+                <p><strong>Boxplot (Diagrama de Caja) ▭:</strong> Es excelente para resumir la distribución y <span class="highlight">detectar valores atípicos (outliers)</span>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Este código generaría un boxplot</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">boxplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">df</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Precio_Miles'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Boxplot de Precios'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">show</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                <p><strong>¿Qué veríamos?</strong> Una "caja" que representa el rango intercuartílico (del 25% al 75% de los datos), una línea en la mediana (50%), y "bigotes" que se extienden para cubrir la mayor parte de los datos. Los puntos individuales más allá de los bigotes son posibles outliers.</p>
+                
+                 <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Comparando precios por zona</span>
+<span class="py-module">sns</span><span class="py-punctuation">.</span><span class="py-method">boxplot</span><span class="py-punctuation">(</span><span class="py-parameter">data</span><span class="py-operator">=</span><span class="py-variable">df</span><span class="py-punctuation">,</span> <span class="py-parameter">x</span><span class="py-operator">=</span><span class="py-string">'Zona'</span><span class="py-punctuation">,</span> <span class="py-parameter">y</span><span class="py-operator">=</span><span class="py-string">'Precio_Miles'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Precios por Zona'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">show</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Esta versión es aún más útil, ya que nos permite comparar la distribución de precios entre las diferentes zonas.</p>
+                 <div class="tip-box">
+                   Aunque no podemos generar gráficos aquí, es fundamental que practiques la creación de estos gráficos en un entorno de Python como Jupyter Notebook o Google Colab para desarrollar tu intuición sobre los datos.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paso 5: Resumen Final -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Análisis Exploratorio de Datos (EDA)</h2>
+            </div>
+            <div class="card-content">
+                <p>El EDA es el primer paso para entender tus datos a fondo.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🕵️</span>
+                        <strong>Objetivo del EDA</strong><br>
+                        Entender, resumir y visualizar datos para encontrar patrones y anomalías.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔬</span>
+                        <strong><code>.info()</code> / <code>.describe()</code></strong><br>
+                        Resumen estructural y estadístico rápido.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">#️⃣</span>
+                        <strong><code>.value_counts()</code></strong><br>
+                        Análisis de frecuencia para variables categóricas.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📊</span>
+                        <strong>Histograma</strong><br>
+                        Visualiza la distribución de una variable numérica.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">〰️</span>
+                        <strong>Gráfico de Densidad (KDE)</strong><br>
+                        Versión suavizada del histograma.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">▭</span>
+                        <strong>Boxplot</strong><br>
+                        Resume la distribución y detecta outliers.
+                    </div>
+                </div>
+                <p>Estas técnicas te proporcionan una base sólida antes de proceder con la limpieza avanzada y el modelado.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de agradecimiento (Paso 6 lógicamente) -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡EDA Dominado!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Has aprendido las técnicas fundamentales del Análisis Exploratorio de Datos.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora que sabes cómo encontrar problemas en tus datos (nulos, outliers, distribuciones extrañas), el siguiente módulo, <strong>Limpieza Avanzada de Datos</strong>, te enseñará técnicas más sofisticadas para corregir estos problemas y preparar tus datos para el modelado.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 5; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Siguiente Módulo ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+        
+    </script>
+</body>
+</html>
