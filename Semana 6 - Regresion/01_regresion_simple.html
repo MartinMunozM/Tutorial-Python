@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Regresión Lineal Simple</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '📈'; 
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Scikit-Learn)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Resaltado de Sintaxis */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string { color: #CE9178; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} 
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">6</span>
+            </div>
+            <h1>Tutorial: Regresión Lineal</h1>
+            <p>Predice el futuro trazando la mejor línea a través de tus datos</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">📏</span>
+                <h2 class="card-title">¿Qué es la <span class="pandas-concept">Regresión Lineal</span>?</h2>
+            </div>
+            <div class="card-content">
+                <p>La <strong>Regresión Lineal</strong> es uno de los algoritmos de Machine Learning más fundamentales. Su objetivo es modelar la relación entre una variable dependiente continua (lo que queremos predecir, $y$) y una variable independiente (nuestra característica predictora, $x$).</p>
+                <p>En el caso de la regresión lineal simple, buscamos encontrar la línea recta que mejor se ajuste a nuestros puntos de datos. Matemáticamente, esto se expresa como:</p>
+                
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$y = \beta_0 + \beta_1x$$
+                </div>
+
+                <ul>
+                    <li>$y$: Es el valor que queremos predecir (ej. Precio de una casa).</li>
+                    <li>$x$: Es nuestra variable predictora (ej. Metros cuadrados).</li>
+                    <li>$\beta_0$: Es el intercepto (el punto donde la línea cruza el eje Y).</li>
+                    <li>$\beta_1$: Es la pendiente (cuánto cambia el valor de $y$ por cada unidad de cambio en $x$).</li>
+                </ul>
+                <div class="tip-box">
+                    A diferencia del análisis de correlación que vimos antes, la regresión no solo dice si hay una relación estadística, sino que <span class="highlight">nos permite calcular predicciones numéricas</span> para observaciones completamente nuevas.
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🗂️</span>
+                <h2 class="card-title">Preparando los <span class="pandas-concept">Datos</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Para entrenar cualquier modelo en Scikit-Learn, primero necesitamos separar nuestros datos en dos componentes esenciales: la matriz de características (generalmente llamada $X$) y el vector objetivo ($y$).</p>
+                <p>Además, es una regla de oro dividir estos datos en un conjunto de <strong>entrenamiento (train)</strong> y uno de <strong>prueba (test)</strong> usando la función <code>train_test_split</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-keyword">from</span> <span class="py-module">sklearn.model_selection</span> <span class="py-keyword">import</span> <span class="py-class-name">train_test_split</span>
+
+<span class="py-comment"># Simulamos un dataset de Años de Experiencia vs Salario</span>
+<span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">seed</span><span class="py-punctuation">(</span><span class="py-number">42</span><span class="py-punctuation">)</span>
+<span class="py-variable">X</span> <span class="py-operator">=</span> <span class="py-number">2</span> <span class="py-operator">*</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">rand</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">)</span> <span class="py-comment"># Experiencia (Variable predictora)</span>
+<span class="py-variable">y</span> <span class="py-operator">=</span> <span class="py-number">4</span> <span class="py-operator">+</span> <span class="py-number">3</span> <span class="py-operator">*</span> <span class="py-variable">X</span> <span class="py-operator">+</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">randn</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">)</span> <span class="py-comment"># Salario (Variable objetivo con ruido)</span>
+
+<span class="py-comment"># Dividimos los datos: 80% entrenamiento, 20% prueba</span>
+<span class="py-variable">X_train</span><span class="py-punctuation">,</span> <span class="py-variable">X_test</span><span class="py-punctuation">,</span> <span class="py-variable">y_train</span><span class="py-punctuation">,</span> <span class="py-variable">y_test</span> <span class="py-operator">=</span> <span class="py-method">train_test_split</span><span class="py-punctuation">(</span><span class="py-variable">X</span><span class="py-punctuation">,</span> <span class="py-variable">y</span><span class="py-punctuation">,</span> <span class="py-parameter">test_size</span><span class="py-operator">=</span><span class="py-number">0.2</span><span class="py-punctuation">,</span> <span class="py-parameter">random_state</span><span class="py-operator">=</span><span class="py-number">42</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Tamaño de Entrenamiento:"</span><span class="py-punctuation">,</span> <span class="py-variable">X_train</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Tamaño de Prueba:"</span><span class="py-punctuation">,</span> <span class="py-variable">X_test</span><span class="py-punctuation">.</span><span class="py-variable">shape</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Tamaño de Entrenamiento: (80, 1)
+Tamaño de Prueba: (20, 1)</pre></div>
+                <div class="warning-box">
+                    Scikit-Learn exige estrictamente que la matriz de características $X$ sea un arreglo bidimensional (2D), incluso si contiene una sola variable predictora.
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🧠</span>
+                <h2 class="card-title">Entrenando el <span class="pandas-concept">Modelo</span></h2>
+            </div>
+            <div class="card-content">
+                <p>El núcleo del modelado en Scikit-Learn se reduce a una api consistente de tres fases: <strong>instanciar</strong> el objeto, <strong>ajustar (fit)</strong> y luego <strong>predecir</strong>.</p>
+                <p>Al invocar el método <code>.fit()</code>, el estimador calcula matemáticamente la solución óptima (por el método de Mínimos Cuadrados Ordinarios) para definir el intercepto ($\beta_0$) y la pendiente ($\beta_1$).</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">from</span> <span class="py-module">sklearn.linear_model</span> <span class="py-keyword">import</span> <span class="py-class-name">LinearRegression</span>
+
+<span class="py-comment"># 1. Instanciar el estimador</span>
+<span class="py-variable">modelo_lr</span> <span class="py-operator">=</span> <span class="py-class-name">LinearRegression</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># 2. Entrenar el modelo con los datos de train</span>
+<span class="py-variable">modelo_lr</span><span class="py-punctuation">.</span><span class="py-method">fit</span><span class="py-punctuation">(</span><span class="py-variable">X_train</span><span class="py-punctuation">,</span> <span class="py-variable">y_train</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Ver los coeficientes calculados</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Intercepto (b0):"</span><span class="py-punctuation">,</span> <span class="py-variable">modelo_lr</span><span class="py-punctuation">.</span><span class="py-variable">intercept_</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Pendiente (b1):"</span><span class="py-punctuation">,</span> <span class="py-variable">modelo_lr</span><span class="py-punctuation">.</span><span class="py-variable">coef_</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">]</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Intercepto (b0): 4.142913319458566
+Pendiente (b1): 2.7993236574808764</pre></div>
+                <p>Los parámetros numéricos obtenidos por la optimización resultan muy aproximados a la función poblacional teórica con la que construimos el entorno sintético ($y = 4 + 3x$).</p>
+            </div>
+        </div>
+
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🎯</span>
+                <h2 class="card-title">Predicciones y <span class="pandas-concept">Evaluación</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Una vez completado el entrenamiento, empleamos el conjunto de prueba aislado para generar inferencias. Posteriormente evaluamos las discrepancias comparando los valores estimados contra las respuestas reales.</p>
+                <p>Las métricas estándar de evaluación cuantitativa para tareas de regresión son:</p>
+                <ul>
+                    <li><strong>Error Cuadrático Medio (MSE):</strong> Promedia las distancias residuales al cuadrado. Se busca minimizarlo lo más cercano posible a cero.</li>
+                    <li><strong>Coeficiente de Determinación ($R^2$):</strong> Representa la proporción de la varianza del vector target que es explicada linealmente por los regresores. Un score de $1.0$ representa un ajuste perfecto.</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">from</span> <span class="py-module">sklearn.metrics</span> <span class="py-keyword">import</span> <span class="py-method">mean_squared_error</span><span class="py-punctuation">,</span> <span class="py-method">r2_score</span>
+
+<span class="py-variable">predicciones</span> <span class="py-operator">=</span> <span class="py-variable">modelo_lr</span><span class="py-punctuation">.</span><span class="py-method">predict</span><span class="py-punctuation">(</span><span class="py-variable">X_test</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Computar métricas diagnósticas</span>
+<span class="py-variable">mse</span> <span class="py-operator">=</span> <span class="py-method">mean_squared_error</span><span class="py-punctuation">(</span><span class="py-variable">y_test</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones</span><span class="py-punctuation">)</span>
+<span class="py-variable">r2</span> <span class="py-operator">=</span> <span class="py-method">r2_score</span><span class="py-punctuation">(</span><span class="py-variable">y_test</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Error Cuadrático Medio (MSE):"</span><span class="py-punctuation">,</span> <span class="py-variable">mse</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Coeficiente R2:"</span><span class="py-punctuation">,</span> <span class="py-variable">r2</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Error Cuadrático Medio (MSE): 0.6536995137170021
+Coeficiente R2: 0.8072059636181392</pre></div>
+            </div>
+        </div>
+
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2 class="card-title">Visualizando la <span class="pandas-concept">Línea de Regresión</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Para diagnosticar de manera cualitativa el comportamiento predictivo, es una buena práctica superponer los puntos empíricos dispersos reales y trazar la función lineal estimada mediante la librería <strong>Matplotlib</strong>.</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Graficar observaciones de test reales</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">scatter</span><span class="py-punctuation">(</span><span class="py-variable">X_test</span><span class="py-punctuation">,</span> <span class="py-variable">y_test</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'blue'</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Datos Reales'</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Graficar hiperplano unidimensional de predicciones</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">X_test</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'red'</span><span class="py-punctuation">,</span> <span class="py-parameter">linewidth</span><span class="py-operator">=</span><span class="py-number">2</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Línea de Regresión'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Regresión Lineal Simple: Predicción de Salarios'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">xlabel</span><span class="py-punctuation">(</span><span class="py-string">'Años de Experiencia'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">ylabel</span><span class="py-punctuation">(</span><span class="py-string">'Salario'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">legend</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">show</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                <p><strong>¿Qué observaríamos en la interfaz gráfica?</strong></p>
+                <p>Una nube puntiforme azul distribuida con tendencia ascendente, cruzada de forma diagonal por una recta continua roja. Esta recta minimiza la suma de las distancias residuales cuadráticas verticales con respecto a los puntos reales observados.</p>
+            </div>
+        </div>
+
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Regresión Lineal Simple</h2>
+            </div>
+            <div class="card-content">
+                <p>La estimación lineal representa la estructura base del aprendizaje automático supervisado de tipo predictivo.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">📏</span>
+                        <strong>Objetivo funcional</strong><br>
+                        Encontrar los coeficientes óptimos óptimos para la función $y = \beta_0 + \beta_1x$.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🗂️</span>
+                        <strong>Estrategia de Validación</strong><br>
+                        Dividir el espacio muestral para mitigar el sobreajuste latente.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🧠</span>
+                        <strong>Optimización (<code>.fit</code>)</strong><br>
+                        Entrenar parámetros usando la matriz de diseño.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔮</span>
+                        <strong>Inferencia (<code>.predict</code>)</strong><br>
+                        Generar combinaciones lineales a partir de nuevos datos independientes.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">🎯</span>
+                        <strong>Diagnóstico ($R^2$, MSE)</strong><br>
+                        Análisis analítico del error y la varianza explicada.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Scikit-Learn Standard</strong><br>
+                        Uso estandarizado de la clase <code>sklearn.linear_model.LinearRegression</code>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-step="7">
+            <div class="thank-you-screen">
+                <div class="icon">🎉</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Regresión Lineal Simple Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Has entrenado, evaluado e interpretado correctamente un estimador fundamental.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🚀 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora que dominas las bases predictivas utilizando un único regresor, el siguiente módulo teórico-práctico abordará la <strong>Regresión Lineal Múltiple</strong>. Allí aprenderás a incorporar múltiples variables predictoras simultáneamente y a lidiar con retos avanzados como la multicolinealidad.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 6; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Siguiente Módulo ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+    </script>
+</body>
+</html>
