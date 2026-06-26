@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Regresión Lineal Múltiple</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🌐'; 
+            font-size: 3rem;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header h1 code { 
+            font-size: inherit;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .card {
+            padding: 30px 40px;
+            min-height: 450px; 
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #f1f3f4; 
+        }
+
+        .card-icon {
+            font-size: 2.2rem; 
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.7rem; 
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .card-title .pandas-concept { 
+             color: #764ba2;
+        }
+
+        .card-content {
+            font-size: 1.05rem; 
+            margin-bottom: 20px;
+        }
+        .card-content ul {
+            margin-left: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            list-style-type: disc; 
+        }
+        .card-content li {
+            margin-bottom: 10px; 
+        }
+        .card-content p {
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background-color: #1e1e1e; 
+            color: #d4d4d4;            
+            padding: 18px; 
+            border-radius: 10px; 
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            position: relative;
+            border-left: 4px solid #4facfe; 
+            overflow-x: auto;
+            font-size: 0.95em;
+            line-height: 1.5;
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .code-block::before {
+            content: 'Python (Pandas / Sklearn)';
+            position: absolute;
+            top: -12px; 
+            right: 15px;
+            background: #4facfe;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        code {
+            font-family: Consolas, 'Courier New', Courier, monospace;
+            background-color: #e8eaf6; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #5c6bc0; 
+        }
+
+        .code-block code {
+            background-color: transparent !important;
+            color: inherit !important; 
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: inherit !important;
+        }
+        
+        /* Resaltado de Sintaxis */
+        .code-block .py-keyword { color: #569CD6; } 
+        .code-block .py-builtin { color: #4EC9B0; } 
+        .code-block .py-function-name { color: #DCDCAA; } 
+        .code-block .py-string { color: #CE9178; } 
+        .code-block .py-number { color: #B5CEA8; } 
+        .code-block .py-comment { color: #6A9955; font-style: italic; } 
+        .code-block .py-variable { color: #9CDCFE; } 
+        .code-block .py-operator { color: #D4D4D4; } 
+        .code-block .py-punctuation { color: #D4D4D4; } 
+        .code-block .py-method { color: #DCDCAA;} 
+        .code-block .py-module { color: #4EC9B0; } 
+        .code-block .py-class-name { color: #4EC9B0; }
+
+        .output-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0; 
+            border-left: 4px solid #28a745; 
+            border-radius: 10px; 
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            font-size: 0.90em; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto; 
+        }
+
+        .output-block::before {
+            content: '📤 Salida Esperada'; 
+            position: absolute;
+            top: -12px; 
+            left: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); 
+            border-left: 5px solid #ffc107; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #856404; 
+        }
+        .warning-box::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); 
+            border-left: 5px solid #17a2b8; 
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0c5460; 
+        }
+        .tip-box::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 15px; 
+            margin: 25px 0;
+        }
+
+        .summary-item {
+            background: #f8f9fa; 
+            color: #333;
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+        .summary-item strong {
+            color: #667eea; 
+        }
+
+        .summary-item .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 10px;
+            display: block;
+            color: #764ba2; 
+        }
+
+        .thank-you-screen {
+            text-align: center;
+            padding: 50px 40px; 
+        }
+
+        .thank-you-screen .icon {
+            font-size: 4.5rem; 
+            margin-bottom: 25px;
+            animation: bounce 2s infinite;
+            color: #764ba2; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-25px); }
+            60% { transform: translateY(-12px); }
+        }
+
+        .author-box { 
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); 
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border: 1px solid #d1d9e6;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+        }
+         .author-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 1.1rem;
+         }
+         .author-box h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+         }
+
+        .step-counter {
+            position: absolute;
+            top: 15px; 
+            left: 15px; 
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px; 
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        .highlight { 
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">
+                Paso <span id="currentStep">1</span> / <span id="totalContentSteps">6</span>
+            </div>
+            <h1>Tutorial: Regresión Lineal Múltiple</h1>
+            <p>Descubre cómo combinar múltiples variables para predecir escenarios reales complejos</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🌐</span>
+                <h2 class="card-title">¿Qué es la <span class="pandas-concept">Regresión Lineal Múltiple</span>?</h2>
+            </div>
+            <div class="card-content">
+                <p>En el mundo real, rara vez un evento depende de un solo factor. El precio de una casa no solo depende de los metros cuadrados, sino también del número de habitaciones, la antigüedad, la ubicación, etc.</p>
+                <p>La <strong>Regresión Lineal Múltiple</strong> amplía nuestro modelo simple para incluir dos o más variables independientes ($x_1, x_2, \dots, x_n$). La ecuación matemática se transforma en un hiperplano:</p>
+                
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$y = \beta_0 + \beta_1x_1 + \beta_2x_2 + \dots + \beta_nx_n$$
+                </div>
+
+                <ul>
+                    <li>$y$: Es nuestra variable objetivo (ej. Precio de venta).</li>
+                    <li>$x_1, x_2, \dots, x_n$: Son nuestras múltiples variables predictoras o <em>features</em>.</li>
+                    <li>$\beta_0$: Es el intercepto base.</li>
+                    <li>$\beta_1, \beta_2, \dots, \beta_n$: Son los coeficientes parciales (cuánto afecta cada variable a $y$, manteniendo las demás constantes).</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🗂️</span>
+                <h2 class="card-title">Preparando un Dataset <span class="pandas-concept">Múltiple</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Vamos a generar un conjunto de datos sintético para simular el mercado inmobiliario usando Pandas. Aquí, nuestra matriz de características ($X$) tendrá múltiples columnas.</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">pandas</span> <span class="py-keyword">as</span> <span class="py-module">pd</span>
+<span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-keyword">from</span> <span class="py-module">sklearn.model_selection</span> <span class="py-keyword">import</span> <span class="py-class-name">train_test_split</span>
+
+<span class="py-comment"># Simulamos 100 casas</span>
+<span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">seed</span><span class="py-punctuation">(</span><span class="py-number">42</span><span class="py-punctuation">)</span>
+<span class="py-variable">area</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">randint</span><span class="py-punctuation">(</span><span class="py-number">50</span><span class="py-punctuation">,</span> <span class="py-number">200</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+<span class="py-variable">habitaciones</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">randint</span><span class="py-punctuation">(</span><span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">5</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+<span class="py-variable">antiguedad</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">randint</span><span class="py-punctuation">(</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">30</span><span class="py-punctuation">,</span> <span class="py-number">100</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Fórmula secreta del precio: 50 + 2*(area) + 15*(hab) - 1.5*(antiguedad) + ruido</span>
+<span class="py-variable">precio</span> <span class="py-operator">=</span> <span class="py-number">50</span> <span class="py-operator">+</span> <span class="py-number">2</span><span class="py-operator">*</span><span class="py-variable">area</span> <span class="py-operator">+</span> <span class="py-number">15</span><span class="py-operator">*</span><span class="py-variable">habitaciones</span> <span class="py-operator">-</span> <span class="py-number">1.5</span><span class="py-operator">*</span><span class="py-variable">antiguedad</span> <span class="py-operator">+</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-variable">random</span><span class="py-punctuation">.</span><span class="py-method">randn</span><span class="py-punctuation">(</span><span class="py-number">100</span><span class="py-punctuation">)</span><span class="py-operator">*</span><span class="py-number">10</span>
+
+<span class="py-comment"># Ensamblamos los datos</span>
+<span class="py-variable">X</span> <span class="py-operator">=</span> <span class="py-module">pd</span><span class="py-punctuation">.</span><span class="py-method">DataFrame</span><span class="py-punctuation">(</span><span class="py-punctuation">{</span><span class="py-string">'Area_m2'</span><span class="py-punctuation">:</span> <span class="py-variable">area</span><span class="py-punctuation">,</span> <span class="py-string">'Habitaciones'</span><span class="py-punctuation">:</span> <span class="py-variable">habitaciones</span><span class="py-punctuation">,</span> <span class="py-string">'Antiguedad_Anios'</span><span class="py-punctuation">:</span> <span class="py-variable">antiguedad</span><span class="py-punctuation">}</span><span class="py-punctuation">)</span>
+<span class="py-variable">y</span> <span class="py-operator">=</span> <span class="py-variable">precio</span>
+
+<span class="py-comment"># División Train/Test</span>
+<span class="py-variable">X_train</span><span class="py-punctuation">,</span> <span class="py-variable">X_test</span><span class="py-punctuation">,</span> <span class="py-variable">y_train</span><span class="py-punctuation">,</span> <span class="py-variable">y_test</span> <span class="py-operator">=</span> <span class="py-method">train_test_split</span><span class="py-punctuation">(</span><span class="py-variable">X</span><span class="py-punctuation">,</span> <span class="py-variable">y</span><span class="py-punctuation">,</span> <span class="py-parameter">test_size</span><span class="py-operator">=</span><span class="py-number">0.2</span><span class="py-punctuation">,</span> <span class="py-parameter">random_state</span><span class="py-operator">=</span><span class="py-number">42</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Features en X_train:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">X_train</span><span class="py-punctuation">.</span><span class="py-method">head</span><span class="py-punctuation">(</span><span class="py-number">2</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Features en X_train:
+    Area_m2  Habitaciones  Antiguedad_Anios
+55      121             2                10
+88      184             1                19</pre></div>
+            </div>
+        </div>
+
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🧠</span>
+                <h2 class="card-title">Entrenando el <span class="pandas-concept">Modelo</span></h2>
+            </div>
+            <div class="card-content">
+                <p>La maravilla de Scikit-Learn es que el proceso de entrenamiento es <strong>exactamente el mismo</strong> sin importar cuántas variables le pasemos a la matriz $X$.</p>
+                <p>La diferencia es que ahora, el atributo <code>.coef_</code> nos devolverá un arreglo con los coeficientes ($\beta_n$) para cada una de nuestras columnas, en el mismo orden.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">from</span> <span class="py-module">sklearn.linear_model</span> <span class="py-keyword">import</span> <span class="py-class-name">LinearRegression</span>
+
+<span class="py-comment"># 1. Instanciar</span>
+<span class="py-variable">modelo_rlm</span> <span class="py-operator">=</span> <span class="py-class-name">LinearRegression</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># 2. Ajustar el modelo</span>
+<span class="py-variable">modelo_rlm</span><span class="py-punctuation">.</span><span class="py-method">fit</span><span class="py-punctuation">(</span><span class="py-variable">X_train</span><span class="py-punctuation">,</span> <span class="py-variable">y_train</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Ver la fórmula resultante</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Intercepto (Base):"</span><span class="py-punctuation">,</span> <span class="py-variable">modelo_rlm</span><span class="py-punctuation">.</span><span class="py-variable">intercept_</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Coeficientes:"</span><span class="py-punctuation">)</span>
+<span class="py-keyword">for</span> <span class="py-variable">columna</span><span class="py-punctuation">,</span> <span class="py-variable">coeficiente</span> <span class="py-keyword">in</span> <span class="py-builtin">zip</span><span class="py-punctuation">(</span><span class="py-variable">X</span><span class="py-punctuation">.</span><span class="py-variable">columns</span><span class="py-punctuation">,</span> <span class="py-variable">modelo_rlm</span><span class="py-punctuation">.</span><span class="py-variable">coef_</span><span class="py-punctuation">)</span><span class="py-punctuation">:</span>
+    <span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"  - </span><span class="py-fstring-brace">{</span><span class="py-variable">columna</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">: </span><span class="py-fstring-brace">{</span><span class="py-variable">coeficiente</span><span class="py-punctuation">:</span><span class="py-string">.2f</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Intercepto (Base): 49.3241
+Coeficientes:
+  - Area_m2: 2.01
+  - Habitaciones: 15.22
+  - Antiguedad_Anios: -1.48</pre></div>
+                <div class="tip-box">
+                    <strong>Interpretación:</strong> Manteniendo todo lo demás constante, añadir una habitación incrementa el precio predicho en \$15.22, y cada año extra de antigüedad lo reduce en \$1.48.
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🎯</span>
+                <h2 class="card-title">Predicciones y <span class="pandas-concept">Métricas</span></h2>
+            </div>
+            <div class="card-content">
+                <p>Evaluamos nuestra regresión múltiple utilizando el conjunto de prueba (Test) como lo hicimos anteriormente.</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">from</span> <span class="py-module">sklearn.metrics</span> <span class="py-keyword">import</span> <span class="py-method">mean_squared_error</span><span class="py-punctuation">,</span> <span class="py-method">r2_score</span>
+
+<span class="py-comment"># 3. Predecir</span>
+<span class="py-variable">predicciones_multiples</span> <span class="py-operator">=</span> <span class="py-variable">modelo_rlm</span><span class="py-punctuation">.</span><span class="py-method">predict</span><span class="py-punctuation">(</span><span class="py-variable">X_test</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Evaluar</span>
+<span class="py-variable">mse</span> <span class="py-operator">=</span> <span class="py-method">mean_squared_error</span><span class="py-punctuation">(</span><span class="py-variable">y_test</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones_multiples</span><span class="py-punctuation">)</span>
+<span class="py-variable">r2</span> <span class="py-operator">=</span> <span class="py-method">r2_score</span><span class="py-punctuation">(</span><span class="py-variable">y_test</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones_multiples</span><span class="py-punctuation">)</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"MSE: </span><span class="py-fstring-brace">{</span><span class="py-variable">mse</span><span class="py-punctuation">:</span><span class="py-string">.2f</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-fstring-text">f"R^2 Score: </span><span class="py-fstring-brace">{</span><span class="py-variable">r2</span><span class="py-punctuation">:</span><span class="py-string">.4f</span><span class="py-fstring-brace">}</span><span class="py-fstring-text">"</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada:</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>MSE: 87.41
+R^2 Score: 0.9892</pre></div>
+                
+                <div class="warning-box">
+                    En regresión múltiple, el $R^2$ normal puede ser engañoso, ya que aumentar variables basura siempre hará que suba un poco. En entornos rigurosos, se prefiere utilizar el <strong>$R^2$ Ajustado</strong>, que penaliza la adición de variables irrelevantes.
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2 class="card-title">Visualizando lo <span class="pandas-concept">Invisible</span></h2>
+            </div>
+            <div class="card-content">
+                <p>En el módulo anterior trazamos una línea en 2D. Ahora nuestro modelo vive en un espacio de 4 dimensiones (3 features + 1 target). ¡Nuestros cerebros no pueden visualizar eso!</p>
+                <p>La técnica estándar de la industria para visualizar el rendimiento de un modelo multidimensional es crear un gráfico de dispersión de <strong>Valores Reales vs. Valores Predichos</strong>.</p>
+                
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">matplotlib.pyplot</span> <span class="py-keyword">as</span> <span class="py-module">plt</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">figure</span><span class="py-punctuation">(</span><span class="py-parameter">figsize</span><span class="py-operator">=</span><span class="py-punctuation">(</span><span class="py-number">8</span><span class="py-punctuation">,</span> <span class="py-number">6</span><span class="py-punctuation">)</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Eje X: Precios reales | Eje Y: Predicciones del modelo</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">scatter</span><span class="py-punctuation">(</span><span class="py-variable">y_test</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones_multiples</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'purple'</span><span class="py-punctuation">,</span> <span class="py-parameter">alpha</span><span class="py-operator">=</span><span class="py-number">0.7</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Línea perfecta (donde y_real == y_predicho)</span>
+<span class="py-variable">limites</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-variable">y_test</span><span class="py-punctuation">.</span><span class="py-method">min</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">,</span> <span class="py-variable">y_test</span><span class="py-punctuation">.</span><span class="py-method">max</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span><span class="py-punctuation">]</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">plot</span><span class="py-punctuation">(</span><span class="py-variable">limites</span><span class="py-punctuation">,</span> <span class="py-variable">limites</span><span class="py-punctuation">,</span> <span class="py-parameter">color</span><span class="py-operator">=</span><span class="py-string">'red'</span><span class="py-punctuation">,</span> <span class="py-parameter">linestyle</span><span class="py-operator">=</span><span class="py-string">'--'</span><span class="py-punctuation">,</span> <span class="py-parameter">label</span><span class="py-operator">=</span><span class="py-string">'Predicción Perfecta'</span><span class="py-punctuation">)</span>
+
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">title</span><span class="py-punctuation">(</span><span class="py-string">'Valores Reales vs Predichos'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">xlabel</span><span class="py-punctuation">(</span><span class="py-string">'Precios Reales'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">ylabel</span><span class="py-punctuation">(</span><span class="py-string">'Precios Predichos'</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">legend</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span>
+<span class="py-module">plt</span><span class="py-punctuation">.</span><span class="py-method">show</span><span class="py-punctuation">(</span><span class="py-punctuation">)</span></code></pre></div>
+                <p><strong>¿Qué observaríamos en esta gráfica?</strong></p>
+                <p>Si nuestro modelo es bueno, los puntos morados se alinearán muy cerca de la línea punteada roja diagonal. Si los puntos están muy dispersos, el modelo tiene un alto margen de error. Es una forma elegante de comprimir el rendimiento multidimensional en un simple plano 2D.</p>
+            </div>
+        </div>
+
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Regresión Lineal Múltiple</h2>
+            </div>
+            <div class="card-content">
+                <p>Al procesar la multiplicidad de variables logramos abstraer fenómenos más complejos de la realidad.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🌐</span>
+                        <strong>Hiperplano</strong><br>
+                        En lugar de líneas, el modelo dibuja planos matemáticos en N-dimensiones.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🧮</span>
+                        <strong><code>.coef_</code></strong><br>
+                        Regresa un vector completo indicando el peso ($\beta$) de cada atributo.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚠️</span>
+                        <strong>Multicolinealidad</strong><br>
+                        El principal reto: evitar variables $X$ que estén altamente correlacionadas entre sí.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📈</span>
+                        <strong>$R^2$ Ajustado</strong><br>
+                        Requisito analítico superior para penalizar variables nulas o ruidosas.
+                    </div>
+                     <div class="summary-item">
+                        <span class="icon">👁️</span>
+                        <strong>Real vs. Predicho</strong><br>
+                        La táctica visual principal para evaluar distribuciones hiper-dimensionales.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" data-step="7">
+            <div class="thank-you-screen">
+                <div class="icon">🚀</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Regresión Múltiple Dominada!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: #555;">Has escalado exitosamente de la línea básica al modelado complejo de múltiples variables.</p>
+                
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🔍 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Hasta ahora hemos asumido que el mundo se comporta en línea recta, pero sabemos que la realidad suele estar llena de curvas. El próximo módulo abordará la <strong>Regresión Polinomial</strong>, donde dotaremos a nuestro modelo lineal de la flexibilidad necesaria para ajustarse matemáticamente a patrones curvos y dinámicos.</p>
+                </div>
+                
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente ➡</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalContentSteps = 6; 
+        const totalLogicalSteps = totalContentSteps + 1; 
+        
+        function updateUI() {
+            const progressBar = document.getElementById('progressBar');
+            const currentStepDisplay = document.getElementById('currentStep');
+            const totalStepsDisplay = document.getElementById('totalContentSteps'); 
+
+            currentStepDisplay.textContent = Math.min(currentStep, totalContentSteps); 
+            totalStepsDisplay.textContent = totalContentSteps;
+            
+            const progressPercent = (Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (parseInt(card.dataset.step) === currentStep) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalContentSteps) { 
+                nextBtn.textContent = 'Siguiente Módulo ➡️';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+            } else if (currentStep === totalLogicalSteps) { 
+                nextBtn.style.display = 'none'; 
+                prevBtn.textContent = '⬅ Volver al Resumen'; 
+                prevBtn.disabled = false; 
+            } else { 
+                nextBtn.textContent = 'Siguiente ➡';
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                prevBtn.textContent = '⬅ Anterior';
+            }
+        }
+        
+        function changeStep(direction) {
+            const newStep = currentStep + direction;
+            
+            if (newStep >= 1 && newStep <= totalLogicalSteps) {
+                currentStep = newStep;
+                updateUI();
+                
+                const containerTop = document.querySelector('.container').offsetTop -20; 
+                 window.scrollTo({
+                    top: containerTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) {
+                changeStep(-1);
+            } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled && document.getElementById('nextBtn').style.display !== 'none') {
+                changeStep(1);
+            }
+        });
+        
+        updateUI();
+    </script>
+</body>
+</html>
