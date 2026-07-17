@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Métricas de Clasificación</title>
+    
+    <!-- Soporte para expresiones matemáticas en LaTeX mediante MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; color: #333; line-height: 1.7; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 30px; text-align: center; position: relative; }
+        .header::before { content: '📊'; font-size: 3rem; position: absolute; top: 10px; right: 20px; opacity: 0.3; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 700; }
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.3); position: relative; overflow: hidden; }
+        .progress { height: 100%; background: linear-gradient(90deg, #ff6b6b, #feca57); width: 0%; transition: width 0.5s ease; }
+        .card { padding: 30px 40px; min-height: 450px; display: none; animation: fadeIn 0.5s ease; }
+        .card.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #f1f3f4; }
+        .card-icon { font-size: 2.2rem; margin-right: 15px; }
+        .card-title { font-size: 1.7rem; font-weight: 600; color: #2c3e50; }
+        .card-content { font-size: 1.05rem; margin-bottom: 20px; }
+        .card-content ul { margin-left: 25px; margin-top: 10px; margin-bottom: 15px; list-style-type: disc; }
+        .card-content li { margin-bottom: 10px; }
+        .code-block { background-color: #1e1e1e; color: #d4d4d4; padding: 18px; border-radius: 10px; font-family: Consolas, monospace; margin: 20px 0; position: relative; border-left: 4px solid #4facfe; overflow-x: auto; font-size: 0.95em; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+        .code-block::before { content: 'Python (Scikit-Learn)'; position: absolute; top: -12px; right: 15px; background: #4facfe; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        code { font-family: Consolas, monospace; background-color: #e8eaf6; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: #5c6bc0; }
+        .code-block code { background-color: transparent !important; color: inherit !important; padding: 0 !important; }
+        .code-block .py-keyword { color: #569CD6; } .code-block .py-number { color: #B5CEA8; } .code-block .py-string { color: #CE9178; } .code-block .py-comment { color: #6A9955; font-style: italic; } .code-block .py-class-name { color: #4EC9B0; }
+        .output-block { background: #f8f9fa; border: 1px solid #e0e0e0; border-left: 4px solid #28a745; border-radius: 10px; padding: 15px; margin: 15px 0; font-family: 'Courier New', monospace; position: relative; font-size: 0.90em; white-space: pre-wrap; }
+        .output-block::before { content: '📤 Salida Esperada'; position: absolute; top: -12px; left: 15px; background: #28a745; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        .tip-box { background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); border-left: 5px solid #17a2b8; padding: 18px; border-radius: 8px; margin: 20px 0; color: #0c5460; }
+        .tip-box::before { content: '💡 '; font-size: 1.2rem; margin-right: 10px; font-weight: bold; }
+        .warning-box { background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); border-left: 5px solid #ffc107; padding: 18px; border-radius: 8px; margin: 20px 0; color: #856404; }
+        .warning-box::before { content: '⚠️ '; font-size: 1.2rem; margin-right: 10px; font-weight: bold; }
+        .navigation { display: flex; justify-content: space-between; padding: 30px 40px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        .btn { padding: 12px 25px; border: none; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 25px 0; }
+        .summary-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #e0e0e0; box-shadow: 0 5px 10px rgba(0,0,0,0.05); }
+        .summary-item .icon { font-size: 1.8rem; margin-bottom: 10px; display: block; color: #764ba2; }
+        .thank-you-screen { text-align: center; padding: 50px 40px; }
+        .thank-you-screen .icon { font-size: 4.5rem; margin-bottom: 25px; animation: bounce 2s infinite; color: #764ba2; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-25px); } 60% { transform: translateY(-12px); } }
+        .author-box { background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); color: #333; padding: 25px; border-radius: 12px; margin-top: 30px; border: 1px solid #d1d9e6; }
+        .author-box h3 { margin-bottom: 10px; color: #667eea; font-size: 1.1rem; }
+        .author-box h2 { font-size: 1.5rem; font-weight: bold; color: #2c3e50; }
+        .step-counter { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 20px; font-weight: bold; color: #333; box-shadow: 0 5px 15px rgba(0,0,0,0.1); font-size: 0.9rem; }
+        .matrix-table { width: 100%; border-collapse: collapse; margin: 20px 0; text-align: center; }
+        .matrix-table th, .matrix-table td { border: 2px solid #e0e0e0; padding: 15px; font-size: 1.1rem; }
+        .matrix-table th { background-color: #f1f3f4; }
+        .matrix-table .correct { background-color: #d4edda; color: #155724; font-weight: bold; }
+        .matrix-table .error { background-color: #f8d7da; color: #721c24; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">Paso <span id="currentStep">1</span> / <span id="totalContentSteps">8</span></div>
+            <h1>Métricas de Evaluación</h1>
+            <p>Descubre qué tan preciso es tu modelo diseccionando sus errores</p>
+        </div>
+        <div class="progress-bar"><div class="progress" id="progressBar"></div></div>
+
+        <!-- Paso 1: Los 4 resultados posibles -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🔀</span>
+                <h2 class="card-title">Los 4 Resultados Posibles</h2>
+            </div>
+            <div class="card-content">
+                <p>En cualquier problema de clasificación binaria (ej. detectar si un correo es Spam o Normal), cuando cruzamos lo que el modelo <strong>predijo</strong> contra lo que <strong>realmente era</strong>, solo pueden ocurrir 4 escenarios:</p>
+                <ul>
+                    <li><strong>Verdadero Positivo ($TP$):</strong> El modelo predijo que SÍ era la clase objetivo (Spam), y en la realidad SÍ lo era. ¡Acierto!</li>
+                    <li><strong>Verdadero Negativo ($TN$):</strong> El modelo predijo que NO era la clase objetivo (Normal), y en la realidad NO lo era. ¡Acierto!</li>
+                    <li><strong>Falso Positivo ($FP$):</strong> El modelo alertó que SÍ era (Spam), pero en realidad NO lo era. (Error Tipo I o <em>Falsa Alarma</em>).</li>
+                    <li><strong>Falso Negativo ($FN$):</strong> El modelo dijo que NO era (Normal), pero en realidad SÍ lo era. (Error Tipo II. Suele ser el más grave en contextos como enfermedades o fraudes).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Paso 2: La Matriz de Confusión -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">🔲</span>
+                <h2 class="card-title">La Matriz de Confusión</h2>
+            </div>
+            <div class="card-content">
+                <p>La <strong>Matriz de Confusión</strong> es simplemente una tabla que organiza y cuenta estos 4 escenarios. Nos permite ver de un vistazo exactamente dónde se está confundiendo nuestro algoritmo.</p>
+                
+                <table class="matrix-table">
+                    <tr>
+                        <th></th>
+                        <th>Predicción: Positivo</th>
+                        <th>Predicción: Negativo</th>
+                    </tr>
+                    <tr>
+                        <th>Realidad: Positivo</th>
+                        <td class="correct">Verdadero Positivo ($TP$)</td>
+                        <td class="error">Falso Negativo ($FN$)</td>
+                    </tr>
+                    <tr>
+                        <th>Realidad: Negativo</th>
+                        <td class="error">Falso Positivo ($FP$)</td>
+                        <td class="correct">Verdadero Negativo ($TN$)</td>
+                    </tr>
+                </table>
+                <div class="tip-box">
+                    Un modelo perfecto tendría ceros en las casillas rojas. Todo el análisis de rendimiento de un clasificador se basa en extraer métricas matemáticas a partir de esta tabla.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Accuracy -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">🎯</span>
+                <h2 class="card-title">Exactitud (Accuracy)</h2>
+            </div>
+            <div class="card-content">
+                <p>El <strong>Accuracy</strong> es la métrica más intuitiva: representa el porcentaje total de aciertos que tuvo el modelo, combinando tanto los verdaderos positivos como los verdaderos negativos.</p>
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$Accuracy = \frac{TP + TN}{TP + TN + FP + FN}$$
+                </div>
+                <div class="warning-box">
+                    <strong>¡El problema de las clases desbalanceadas!</strong> Si el 99% de tus transacciones bancarias son normales y solo 1% son fraude, un modelo "inútil" que clasifique absolutamente todo como "Normal" obtendrá un 99% de Accuracy. Matemáticamente parece perfecto, pero el modelo jamás encontrará un fraude. Por eso necesitamos métricas más avanzadas.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 4: Precision -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🏹</span>
+                <h2 class="card-title">Precisión (Precision)</h2>
+            </div>
+            <div class="card-content">
+                <p>La <strong>Precisión</strong> responde a la pregunta: <em>"De todas las veces que el modelo alertó que era Positivo, ¿cuántas veces tuvo razón en realidad?"</em></p>
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$Precision = \frac{TP}{TP + FP}$$
+                </div>
+                <p>Esta métrica se enfoca en castigar los <strong>Falsos Positivos (Falsas alarmas)</strong>.</p>
+                <ul>
+                    <li><strong>Ejemplo ideal:</strong> Si tu filtro de Spam envía un correo a la carpeta de correo no deseado, quieres estar sumamente seguro de que realmente es Spam (Alta Precisión), para no borrar un correo importante del jefe.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Paso 5: Recall -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🧲</span>
+                <h2 class="card-title">Sensibilidad (Recall)</h2>
+            </div>
+            <div class="card-content">
+                <p>El <strong>Recall</strong> (también llamado Sensibilidad o Tasa de Verdaderos Positivos) responde a: <em>"De todos los Positivos reales que existían allá afuera, ¿cuántos logró capturar nuestro modelo?"</em></p>
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$Recall = \frac{TP}{TP + FN}$$
+                </div>
+                <p>Esta métrica se enfoca en castigar los <strong>Falsos Negativos (Riesgos pasados por alto)</strong>.</p>
+                <ul>
+                    <li><strong>Ejemplo ideal:</strong> En un test de diagnóstico de cáncer, prefieres enviar a un paciente sano a hacerse más pruebas (Falso Positivo) que decirle a un paciente enfermo que está sano y mandarlo a su casa (Falso Negativo). Aquí debes maximizar el Recall.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Paso 6: F1-Score -->
+        <div class="card" data-step="6">
+            <div class="card-header">
+                <span class="card-icon">⚖️</span>
+                <h2 class="card-title">El F1-Score</h2>
+            </div>
+            <div class="card-content">
+                <p>Precisión y Recall suelen tener una relación inversa: si ajustas el modelo para ser muy estricto y no dar falsas alarmas (sube Precisión), empezarás a ignorar casos reales (baja Recall), y viceversa.</p>
+                <p>Para tener una métrica única que resuma el rendimiento equilibrando ambos mundos, usamos el <strong>F1-Score</strong>, que es la media armónica entre ambos:</p>
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$F1 = 2 \times \frac{Precision \times Recall}{Precision + Recall}$$
+                </div>
+                <p>La característica clave de la media armónica es que el F1-Score solo será alto si <strong>tanto la Precisión como el Recall son altos de manera simultánea</strong>. Es la métrica preferida por excelencia ante conjuntos de datos desbalanceados.</p>
+            </div>
+        </div>
+
+        <!-- Paso 7: Implementación en Python -->
+        <div class="card" data-step="7">
+            <div class="card-header">
+                <span class="card-icon">💻</span>
+                <h2 class="card-title">Implementación en Python</h2>
+            </div>
+            <div class="card-content">
+                <p>Scikit-Learn nos evita calcular estas fórmulas manualmente. Con un par de funciones podemos obtener la Matriz de Confusión y un Reporte de Clasificación completo.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">from</span> <span class="py-module">sklearn.metrics</span> <span class="py-keyword">import</span> <span class="py-method">classification_report</span><span class="py-punctuation">,</span> <span class="py-method">confusion_matrix</span>
+
+<span class="py-comment"># Simulamos y_test real y las predicciones de nuestro modelo</span>
+<span class="py-variable">y_test_real</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">]</span> <span class="py-comment"># 3 Normales(0), 3 Fraudes(1)</span>
+<span class="py-variable">predicciones</span> <span class="py-operator">=</span> <span class="py-punctuation">[</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">]</span>
+
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Matriz de Confusión:\n"</span><span class="py-punctuation">,</span> <span class="py-method">confusion_matrix</span><span class="py-punctuation">(</span><span class="py-variable">y_test_real</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones</span><span class="py-punctuation">))</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"\nReporte Completo:\n"</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-method">classification_report</span><span class="py-punctuation">(</span><span class="py-variable">y_test_real</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones</span><span class="py-punctuation">))</span></code></pre></div>
+                <div class="output-block" style="font-size: 0.8em; line-height: 1.4;"><pre>Matriz de Confusión:
+ [[2 1]  <-- 2 TN, 1 FP
+  [1 2]] <-- 1 FN, 2 TP
+
+Reporte Completo:
+              precision    recall  f1-score   support
+
+           0       0.67      0.67      0.67         3
+           1       0.67      0.67      0.67         3
+
+    accuracy                           0.67         6</pre></div>
+            </div>
+        </div>
+
+        <!-- Paso 8: Resumen -->
+        <div class="card" data-step="8">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen de Métricas</h2>
+            </div>
+            <div class="card-content">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">🔲</span>
+                        <strong>Matriz de Confusión</strong><br>
+                        Desglose en $TP, TN, FP, FN$.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🎯</span>
+                        <strong>Accuracy</strong><br>
+                        Porcentaje de acierto. Falla en datos desbalanceados.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🏹</span>
+                        <strong>Precision</strong><br>
+                        "¿Cuan fiable es mi alarma cuando suena?" (Penaliza $FP$)
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🧲</span>
+                        <strong>Recall</strong><br>
+                        "¿Logré atrapar a la mayoría de positivos?" (Penaliza $FN$)
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚖️</span>
+                        <strong>F1-Score</strong><br>
+                        La métrica rey. Equilibra Precision y Recall.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 9: Cierre -->
+        <div class="card" data-step="9">
+            <div class="thank-you-screen">
+                <div class="icon">🚀</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Métricas de Error Dominadas!</h2>
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🔍 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora sabes exactamente dónde se equivoca tu modelo y cómo castigar esos errores. Cerraremos esta semana con el último módulo: <strong>Consejos Generales</strong>, donde aprenderemos tácticas como el remuestreo para lidiar con el desbalance de clases y cómo prevenir el temido "Data Leakage".</p>
+                </div>
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente Módulo ➡</button>
+        </div>
+    </div>
+    <script>
+        let currentStep = 1; const totalContentSteps = 8; const totalLogicalSteps = totalContentSteps + 1; 
+        function updateUI() {
+            document.getElementById('currentStep').textContent = Math.min(currentStep, totalContentSteps); 
+            document.getElementById('progressBar').style.width = ((Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100) + '%';
+            document.querySelectorAll('.card').forEach(card => card.classList.toggle('active', parseInt(card.dataset.step) === currentStep));
+            document.getElementById('prevBtn').disabled = currentStep === 1;
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            if (currentStep === totalContentSteps) { nextBtn.textContent = 'Siguiente Módulo ➡️'; nextBtn.style.display = 'block'; }
+            else if (currentStep === totalLogicalSteps) { nextBtn.style.display = 'none'; prevBtn.textContent = '⬅ Volver al Resumen'; }
+            else { nextBtn.textContent = 'Siguiente ➡'; nextBtn.style.display = 'block'; prevBtn.textContent = '⬅ Anterior'; }
+        }
+        function changeStep(direction) {
+            if (currentStep + direction >= 1 && currentStep + direction <= totalLogicalSteps) {
+                currentStep += direction; updateUI(); window.scrollTo({top: document.querySelector('.container').offsetTop -20, behavior: 'smooth'});
+            }
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) changeStep(-1); else if (e.key === 'ArrowRight' && document.getElementById('nextBtn').style.display !== 'none') changeStep(1); });
+        updateUI();
+    </script>
+</body>
+</html>

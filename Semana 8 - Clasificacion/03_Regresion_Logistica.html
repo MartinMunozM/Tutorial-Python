@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Regresión Logística</title>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <style>
+        /* [Se mantienen las mismas clases CSS base por brevedad] */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; color: #333; line-height: 1.7; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 30px; text-align: center; position: relative; }
+        .header::before { content: '📉'; font-size: 3rem; position: absolute; top: 10px; right: 20px; opacity: 0.3; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 700; }
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.3); position: relative; overflow: hidden; }
+        .progress { height: 100%; background: linear-gradient(90deg, #ff6b6b, #feca57); width: 0%; transition: width 0.5s ease; }
+        .card { padding: 30px 40px; min-height: 450px; display: none; animation: fadeIn 0.5s ease; }
+        .card.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #f1f3f4; }
+        .card-icon { font-size: 2.2rem; margin-right: 15px; }
+        .card-title { font-size: 1.7rem; font-weight: 600; color: #2c3e50; }
+        .card-content { font-size: 1.05rem; margin-bottom: 20px; }
+        .card-content ul { margin-left: 25px; margin-top: 10px; margin-bottom: 15px; list-style-type: disc; }
+        .card-content li { margin-bottom: 10px; }
+        .code-block { background-color: #1e1e1e; color: #d4d4d4; padding: 18px; border-radius: 10px; font-family: Consolas, monospace; margin: 20px 0; position: relative; border-left: 4px solid #4facfe; overflow-x: auto; font-size: 0.95em; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+        .code-block::before { content: 'Python (Scikit-Learn)'; position: absolute; top: -12px; right: 15px; background: #4facfe; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        code { font-family: Consolas, monospace; background-color: #e8eaf6; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: #5c6bc0; }
+        .code-block code { background-color: transparent !important; color: inherit !important; padding: 0 !important; }
+        .code-block .py-keyword { color: #569CD6; } .code-block .py-number { color: #B5CEA8; } .code-block .py-string { color: #CE9178; } .code-block .py-comment { color: #6A9955; font-style: italic; } .code-block .py-class-name { color: #4EC9B0; }
+        .output-block { background: #f8f9fa; border: 1px solid #e0e0e0; border-left: 4px solid #28a745; border-radius: 10px; padding: 15px; margin: 15px 0; font-family: 'Courier New', monospace; position: relative; font-size: 0.90em; white-space: pre-wrap; }
+        .output-block::before { content: '📤 Salida Esperada'; position: absolute; top: -12px; left: 15px; background: #28a745; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        .tip-box { background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); border-left: 5px solid #17a2b8; padding: 18px; border-radius: 8px; margin: 20px 0; color: #0c5460; }
+        .tip-box::before { content: '💡 '; font-size: 1.2rem; margin-right: 10px; font-weight: bold; }
+        .warning-box { background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); border-left: 5px solid #ffc107; padding: 18px; border-radius: 8px; margin: 20px 0; color: #856404; }
+        .warning-box::before { content: '⚠️ '; font-size: 1.2rem; margin-right: 10px; font-weight: bold; }
+        .navigation { display: flex; justify-content: space-between; padding: 30px 40px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        .btn { padding: 12px 25px; border: none; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 25px 0; }
+        .summary-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #e0e0e0; box-shadow: 0 5px 10px rgba(0,0,0,0.05); }
+        .summary-item .icon { font-size: 1.8rem; margin-bottom: 10px; display: block; color: #764ba2; }
+        .thank-you-screen { text-align: center; padding: 50px 40px; }
+        .thank-you-screen .icon { font-size: 4.5rem; margin-bottom: 25px; animation: bounce 2s infinite; color: #764ba2; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-25px); } 60% { transform: translateY(-12px); } }
+        .author-box { background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ed 100%); color: #333; padding: 25px; border-radius: 12px; margin-top: 30px; border: 1px solid #d1d9e6; }
+        .author-box h3 { margin-bottom: 10px; color: #667eea; font-size: 1.1rem; }
+        .author-box h2 { font-size: 1.5rem; font-weight: bold; color: #2c3e50; }
+        .step-counter { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 20px; font-weight: bold; color: #333; box-shadow: 0 5px 15px rgba(0,0,0,0.1); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="step-counter">Paso <span id="currentStep">1</span> / <span id="totalContentSteps">5</span></div>
+            <h1>Regresión Logística</h1>
+            <p>Usando probabilidades para decidir el lado correcto de la frontera</p>
+        </div>
+        <div class="progress-bar"><div class="progress" id="progressBar"></div></div>
+
+        <!-- Paso 1 -->
+        <div class="card active" data-step="1">
+            <div class="card-header">
+                <span class="card-icon">🤔</span>
+                <h2 class="card-title">¿Qué es a pesar de su nombre?</h2>
+            </div>
+            <div class="card-content">
+                <p>El nombre <strong>Regresión Logística</strong> puede ser engañoso. Aunque tiene la palabra "Regresión", es en realidad un poderoso algoritmo lineal utilizado en problemas de <strong>Clasificación</strong>.</p>
+                <p>Calcula la ecuación lineal básica ($y = \beta_0 + \beta_1X$), pero en lugar de generar un número infinito (como el precio de una casa), pasa ese resultado por una función especial para devolver una <span class="highlight">probabilidad entre 0 y 1</span>.</p>
+            </div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="card" data-step="2">
+            <div class="card-header">
+                <span class="card-icon">📈</span>
+                <h2 class="card-title">La Función Sigmoide</h2>
+            </div>
+            <div class="card-content">
+                <p>La magia detrás del algoritmo reside en la función <strong>Sigmoide</strong> (también llamada función logística). Dibuja una curva en forma de "S".</p>
+                <div style="font-size: 1.3em; margin: 20px 0; text-align: center;">
+                    $$p(x) = \frac{1}{1 + e^{-(\beta_0 + \beta_1x)}}$$
+                </div>
+                <p>El modelo evalúa las características y escupe una probabilidad, por ejemplo: $0.85$. Por defecto, si la probabilidad es $>= 0.5$, lo clasifica como Clase 1 (Ej. Spam). Si es $< 0.5$, lo clasifica como Clase 0.</p>
+            </div>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="card" data-step="3">
+            <div class="card-header">
+                <span class="card-icon">💻</span>
+                <h2 class="card-title">Implementación en Python</h2>
+            </div>
+            <div class="card-content">
+                <p>Es muy similar a usar la Regresión Lineal regular de Scikit-Learn.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-keyword">import</span> <span class="py-module">numpy</span> <span class="py-keyword">as</span> <span class="py-module">np</span>
+<span class="py-keyword">from</span> <span class="py-module">sklearn.linear_model</span> <span class="py-keyword">import</span> <span class="py-class-name">LogisticRegression</span>
+
+<span class="py-comment"># Simulamos datos (1 variable predictora)</span>
+<span class="py-variable">X_train</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">([[</span><span class="py-number">10</span><span class="py-punctuation">],</span> <span class="py-punctuation">[</span><span class="py-number">15</span><span class="py-punctuation">],</span> <span class="py-punctuation">[</span><span class="py-number">30</span><span class="py-punctuation">],</span> <span class="py-punctuation">[</span><span class="py-number">50</span><span class="py-punctuation">]])</span> <span class="py-comment"># Horas de estudio</span>
+<span class="py-variable">y_train</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">([</span><span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">0</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">,</span> <span class="py-number">1</span><span class="py-punctuation">])</span> <span class="py-comment"># 0 = Reprobado, 1 = Aprobado</span>
+
+<span class="py-comment"># Instanciar y Entrenar</span>
+<span class="py-variable">modelo_log</span> <span class="py-operator">=</span> <span class="py-class-name">LogisticRegression</span><span class="py-punctuation">()</span>
+<span class="py-variable">modelo_log</span><span class="py-punctuation">.</span><span class="py-method">fit</span><span class="py-punctuation">(</span><span class="py-variable">X_train</span><span class="py-punctuation">,</span> <span class="py-variable">y_train</span><span class="py-punctuation">)</span>
+
+<span class="py-comment"># Predecir sobre 25 horas y 40 horas</span>
+<span class="py-variable">X_nuevo</span> <span class="py-operator">=</span> <span class="py-module">np</span><span class="py-punctuation">.</span><span class="py-method">array</span><span class="py-punctuation">([[</span><span class="py-number">25</span><span class="py-punctuation">],</span> <span class="py-punctuation">[</span><span class="py-number">40</span><span class="py-punctuation">]])</span>
+<span class="py-variable">predicciones</span> <span class="py-operator">=</span> <span class="py-variable">modelo_log</span><span class="py-punctuation">.</span><span class="py-method">predict</span><span class="py-punctuation">(</span><span class="py-variable">X_nuevo</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Predicciones (0 o 1):"</span><span class="py-punctuation">,</span> <span class="py-variable">predicciones</span><span class="py-punctuation">)</span></code></pre></div>
+            </div>
+        </div>
+
+        <!-- Paso 4 -->
+        <div class="card" data-step="4">
+            <div class="card-header">
+                <span class="card-icon">🔮</span>
+                <h2 class="card-title">Interpretación de Probabilidades</h2>
+            </div>
+            <div class="card-content">
+                <p>Una gran ventaja de este algoritmo es que no solo entrega un diagnóstico final (0 o 1), sino que podemos consultar su <strong>nivel de seguridad</strong> usando el método <code>.predict_proba()</code>.</p>
+                <div class="code-block"><pre><code class="language-python"><span class="py-comment"># Consultar la probabilidad calculada por la curva sigmoide</span>
+<span class="py-variable">probabilidades</span> <span class="py-operator">=</span> <span class="py-variable">modelo_log</span><span class="py-punctuation">.</span><span class="py-method">predict_proba</span><span class="py-punctuation">(</span><span class="py-variable">X_nuevo</span><span class="py-punctuation">)</span>
+<span class="py-builtin">print</span><span class="py-punctuation">(</span><span class="py-string">"Probabilidad de [Clase 0, Clase 1]:\n"</span><span class="py-punctuation">,</span> <span class="py-variable">probabilidades</span><span class="py-punctuation">)</span></code></pre></div>
+                <p>Salida esperada (Aproximada):</p>
+                <div class="output-block" style="font-size: 0.85em; line-height: 1.4;"><pre>Probabilidad de [Clase 0, Clase 1]:
+[[0.62  0.38]
+ [0.15  0.85]]</pre></div>
+                <div class="tip-box">
+                    Para el primer alumno (25h), el modelo cree que hay un 62% de probabilidad de reprobar (0) frente a 38% de aprobar (1). Por tanto, la clase final será 0.
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 5 -->
+        <div class="card" data-step="5">
+            <div class="card-header">
+                <span class="card-icon">🎓</span>
+                <h2 class="card-title">Resumen: Regresión Logística</h2>
+            </div>
+            <div class="card-content">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="icon">📉</span>
+                        <strong>Lineal pero Clasificador</strong><br>
+                        Calcula una frontera de decisión lineal.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">📈</span>
+                        <strong>Sigmoide</strong><br>
+                        Aplica la función matemática que "aplasta" valores a $0 \leftrightarrow 1$.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">🔮</span>
+                        <strong>Probabilidades</strong><br>
+                        <code>.predict_proba()</code> entrega certezas porcentuales.
+                    </div>
+                    <div class="summary-item">
+                        <span class="icon">⚙️</span>
+                        <strong>Scikit-Learn</strong><br>
+                        <code>sklearn.linear_model.LogisticRegression</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 6 -->
+        <div class="card" data-step="6">
+            <div class="thank-you-screen">
+                <div class="icon">🚀</div>
+                <h2 style="font-size: 2.3rem; margin-bottom: 20px; color: #2c3e50;">¡Regresión Logística Dominada!</h2>
+                <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px solid #80deea;">
+                    <h3 style="color: #00796b; margin-bottom: 15px;">🔍 ¿Qué sigue?</h3>
+                    <p style="color: #004d40; font-size: 1.05rem;">Ahora que generaste predicciones categóricas, ¿cómo sabemos si son buenas? En el siguiente módulo aprenderemos sobre las <strong>Métricas de Error para Clasificación</strong> (ya no usaremos el MSE).</p>
+                </div>
+                <div class="author-box">
+                    <h3>👨‍🏫 Material diseñado por:</h3>
+                    <h2>Dr. Martín Muñoz Mandujano</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>⬅ Anterior</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente Módulo ➡</button>
+        </div>
+    </div>
+    <script>
+        let currentStep = 1; const totalContentSteps = 5; const totalLogicalSteps = totalContentSteps + 1; 
+        function updateUI() {
+            document.getElementById('currentStep').textContent = Math.min(currentStep, totalContentSteps); 
+            document.getElementById('progressBar').style.width = ((Math.min(currentStep, totalContentSteps) / totalContentSteps) * 100) + '%';
+            document.querySelectorAll('.card').forEach(card => card.classList.toggle('active', parseInt(card.dataset.step) === currentStep));
+            document.getElementById('prevBtn').disabled = currentStep === 1;
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            if (currentStep === totalContentSteps) { nextBtn.textContent = 'Siguiente Módulo ➡️'; nextBtn.style.display = 'block'; }
+            else if (currentStep === totalLogicalSteps) { nextBtn.style.display = 'none'; prevBtn.textContent = '⬅ Volver al Resumen'; }
+            else { nextBtn.textContent = 'Siguiente ➡'; nextBtn.style.display = 'block'; prevBtn.textContent = '⬅ Anterior'; }
+        }
+        function changeStep(direction) {
+            if (currentStep + direction >= 1 && currentStep + direction <= totalLogicalSteps) {
+                currentStep += direction; updateUI(); window.scrollTo({top: document.querySelector('.container').offsetTop -20, behavior: 'smooth'});
+            }
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) changeStep(-1); else if (e.key === 'ArrowRight' && document.getElementById('nextBtn').style.display !== 'none') changeStep(1); });
+        updateUI();
+    </script>
+</body>
+</html>
